@@ -8,7 +8,7 @@
     pi@raspberrypi:~ $ git clone https://github.com/DiaLight/OpenCVClient.git
     pi@raspberrypi:~ $ cd OpenCVClient/
     pi@raspberrypi:~/OpenCVClient $ mkdir build && cd build
-    pi@raspberrypi:~/OpenCVClient/build $ cmake -DCMAKE_INSTALL_PREFIX=bin ..
+    pi@raspberrypi:~/OpenCVClient/build $ cmake
     pi@raspberrypi:~/OpenCVClient/build $ make
 
 ## Usage
