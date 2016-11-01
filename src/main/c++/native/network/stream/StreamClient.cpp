@@ -44,8 +44,8 @@ void StreamClient::bind() {
             ":" << ntohs(cliAddr.sin_port) << endl;
 }
 
-int StreamClient::recv(void *buf, size_t size, ServerAddr *addr) {
-    int n = recvfrom(cliFD, buf, size, 0, (struct sockaddr *) &addr->srvAddr, &addr->srvAddrLen);
+ssize_t StreamClient::recv(void *buf, size_t size, ServerAddr *addr) {
+    ssize_t n = recvfrom(cliFD, buf, size, 0, (struct sockaddr *) &addr->srvAddr, &addr->srvAddrLen);
     if (n < 0) {
         cerr << "ERROR on receiving. " << strerror(errno) << endl;
         exit(1);

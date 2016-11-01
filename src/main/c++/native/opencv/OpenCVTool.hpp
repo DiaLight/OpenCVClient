@@ -17,29 +17,17 @@
 #include <opencv2/opencv.hpp>
 #include <sstream>
 #include "network/properties/PropertiesClient.hpp"
+#include "opencv/FaceDetect.hpp"
 
 using namespace std;
 using namespace cv;
 
 class OpenCVTool {
     PropertiesClient *propc;
-    CascadeClassifier face_cascade;
-    vector<Rect> faces;
-    Size min_face;
-    Size max_face;
 public:
-    OpenCVTool(PropertiesClient *propc) {
+    FaceDetect faceDetect;
+    OpenCVTool(PropertiesClient *propc) : faceDetect(propc) {
         this->propc = propc;
-        int min_face_size = 100;
-        int max_face_size = 200;
-        min_face = Size(min_face_size, min_face_size);
-        max_face = Size(max_face_size, max_face_size);
-        //haarcascade_frontalface_default.xml
-        //lbpcascade_frontalcatface.xml
-        if (!face_cascade.load("/home/dialight/haarcascade_frontalface_default.xml")) {
-            cout << "Error on loading classifier" << endl;
-            exit(1);
-        }
     }
     
     OpenCVTool(const OpenCVTool&) = delete; //deleted copy constructor
@@ -91,20 +79,7 @@ public:
 //            line(frame, Point2i(x1, y1), Point2i(x2, y2), Scalar(0, 255, 0));
 //        }
     }
-    
-    void faceDetect(Mat gray, Mat frame) {
-        //        GaussianBlur(gray, gray, Size(7, 7), 1.5, 1.5);
-        //        Canny(gray, gray, 0, 30, 3);
-        int flags = CV_HAAR_SCALE_IMAGE;
-        face_cascade.detectMultiScale(gray, faces, 1.1, 2, flags, min_face, max_face);
-        for (int i = 0; i < faces.size(); i++) { //very fast operation ( < 1 ms)
-            cv::rectangle(frame, faces[i], Scalar(0, 255, 0));
-            stringstream ss;
-            ss << faces[i].width << " " << faces[i].height;
-            cv::putText(frame, ss.str(), cvPoint(faces[i].x, faces[i].y - 5), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(200, 200, 250), 1, CV_AA);
-        }
-        faces.clear();
-    }
+
 private:
 
 };

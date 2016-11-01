@@ -31,7 +31,7 @@ void signalHandler(int signum) {
 
 int main(int argc, char** argv) {
 
-    //get target address from command line args
+    //get target address from command line inArgs
     ServerAddr addr(argc, argv);
 
     //init video source
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     ImagePacket packet; //network structure
     scli.bind();
     
-    //setup signal handler for caught interrupts
+    //setup signal inHandler for caught interrupts
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
     
@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
                 case 0:
                     tool.gaussianBlur(gray, 7, 15);
                     tool.canny(gray, 0, 300); //обводит резкие линии(детектор границ Кенни)
-                    tool.faceDetect(gray, frame);
+                    tool.faceDetect.detectMultiScale(gray, frame);
                     break;
                 case 1:
                     tool.gaussianBlur(gray, 7, 15);

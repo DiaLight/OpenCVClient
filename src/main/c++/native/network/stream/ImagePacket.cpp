@@ -29,11 +29,11 @@ ImagePacket::~ImagePacket() {
 
 void ImagePacket::setImage(InputArray img) {
     imencode(".jpg", img, buff, param);
-    frameIndex = time(0);
+    frameIndex = (__uint64_t) time(0);
 }
 
 void ImagePacket::send(StreamClient *cli, ServerAddr *addr) {
-    int size = buff.size();
+    int size = (int) buff.size();
     int left = (size + 4 + 8) % (bufSize - 8 - 1);
     int parts = (size + 4) / (bufSize - 8 - 1);
     if (left != 0) parts++;
@@ -42,17 +42,17 @@ void ImagePacket::send(StreamClient *cli, ServerAddr *addr) {
         int bufPos = 0;
         ((long *) (buf + bufPos))[0] = __bswap_64(frameIndex);
         bufPos += 8;
-        ((char *) (buf + bufPos))[0] = i;
+        ((char *) (buf + bufPos))[0] = (char) i;
         bufPos += 1;
         if (i == 0) {
-            ((int *) (buf + bufPos))[0] = __bswap_32(size);
+            ((int *) (buf + bufPos))[0] = __bswap_32((unsigned int) size);
             bufPos += 4;
         }
         int partSize = bufSize - bufPos;
         if (dataPos + partSize > size) partSize = size - dataPos;
-        memcpy((void*) (buf + bufPos), (void*) (((char *) buff.data()) + dataPos), partSize);
+        memcpy((void*) (buf + bufPos), (void*) (((char *) buff.data()) + dataPos), (size_t) partSize);
         dataPos += partSize;
         bufPos += partSize;
-        cli->send(buf, bufPos, addr);
+        cli->send(buf, (size_t) bufPos, addr);
     }
 }

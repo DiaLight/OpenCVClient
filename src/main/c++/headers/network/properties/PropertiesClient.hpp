@@ -19,20 +19,17 @@
 #include <map>
 #include <thread>
 #include <mutex>
-#include "network/ServerAddr.hpp"
+#include <network/properties/protocol/Protocol.hpp>
+#include "TCPClient.hpp"
+#include "TCPPacketClient.hpp"
 
 using namespace std;
 
-class PropertiesClient {
+class PropertiesClient : TCPPacketClient {
     ServerAddr *addr;
-    int cliDesc;
-    bool connected;
-    
-    thread *thr;
-    mutex params_m;
-    map <string, int> params;
 
-    char stringBuf[4096];
+    thread *thr;
+    map <string, int> props;
 public:
     PropertiesClient(ServerAddr *addr);
 
@@ -44,34 +41,23 @@ public:
     int getInt(const string& name, int defVal);
     
     void runAsync();
-    
+
 private:
 
     static void connectStatic(void *params) {
         ((PropertiesClient *) params)->connect();
     }
-
     void connect();
-    void process();
 
-    string readUTF();
-    void writeUTF(const string& str);
+    static void onInPacketReceivedStatic(InPacket *p, void *args) {
+        ((PropertiesClient *) args)->onInPacketReceived(p);
+    }
+    void onInPacketReceived(InPacket *p);
 
-    int readShort();
-    void writeShort(int s);
-
-    int readInt();
-    void writeInt(int i);
-
-    __uint64_t readLong();
-    void writeLong(__uint64_t i);
-
-    int readByte();
-    void writeByte(int i);
-
-    bool readBool();
-    void writeBool(bool b);
-    
+    static void onOutPacketSendStatic(OutPacket *p, void *args) {
+        ((PropertiesClient *) args)->onOutPacketSend(p);
+    }
+    void onOutPacketSend(OutPacket *p);
 };
 
 #endif /* CONFIGSERVER_HPP */

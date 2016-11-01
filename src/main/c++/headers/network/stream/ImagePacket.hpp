@@ -25,7 +25,7 @@ class ImagePacket {
     char *buf;
     std::vector<uchar> buff; //buffer for encoding
     std::vector<int> param;
-    long frameIndex;
+    __uint64_t frameIndex;
 public:
     ImagePacket();
     virtual ~ImagePacket();

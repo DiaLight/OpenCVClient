@@ -39,7 +39,7 @@ public:
     virtual ~StreamClient();
     
     void bind();
-    int recv(void *buf, size_t size, ServerAddr *addr);
+    ssize_t recv(void *buf, size_t size, ServerAddr *addr);
     void send(void *buf, size_t size, ServerAddr *addr);
 };
 
