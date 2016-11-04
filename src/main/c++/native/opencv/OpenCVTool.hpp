@@ -37,17 +37,17 @@ public:
         
     }
 
-    void gaussianBlur(Mat mat, int def_ksize = 7, int def_sigma = 15) {
+    void gaussianBlur(Mat mat, int def_ksize = 7, double def_sigma = 1.5) {
         int ksize = propc->getInt("GaussianBlur.ksize", def_ksize);
         if(ksize % 2 == 0) ksize++; //OpenCV Assertion(ksize.width > 0 && ksize.width % 2 == 1 && ksize.height > 0 && ksize.height % 2 == 1)
         if(ksize < 0) ksize = 1;
-        double sigma = propc->getInt("GaussianBlur.sigma", def_sigma) * 0.1;
+        double sigma = propc->getDouble("GaussianBlur.sigma", def_sigma);
         GaussianBlur(mat, mat, Size(ksize, ksize), sigma, sigma);
     }
 
-    void canny(Mat mat, int def_thr1 = 0, int def_thr2 = 300) {
-        double threshold1 = propc->getInt("Canny.thr1", def_thr1) * 0.1;
-        double threshold2 = propc->getInt("Canny.thr2", def_thr2) * 0.1;
+    void canny(Mat mat, double def_thr1 = 0, double def_thr2 = 30.0) {
+        double threshold1 = propc->getDouble("Canny.thr1", def_thr1);
+        double threshold2 = propc->getDouble("Canny.thr2", def_thr2);
         Canny(mat, mat, threshold1, threshold2, 3);
     }
 

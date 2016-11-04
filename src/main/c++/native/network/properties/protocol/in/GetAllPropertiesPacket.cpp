@@ -4,14 +4,20 @@
 
 #include "network/properties/protocol/in/GetAllPropertiesPacket.hpp"
 
-PacketType GetAllPropertiesPacket::TYPE("GetAllPropertiesPacket");
-
 GetAllPropertiesPacket::GetAllPropertiesPacket() : InPacket() {}
 
-void GetAllPropertiesPacket::read(TCPClient *client) {
+void GetAllPropertiesPacket::read(TCPSocketClient *client) {
 
 }
 
 PacketType GetAllPropertiesPacket::getType() {
-    return TYPE;
+    return PacketType::GET_ALL_PROPERTIES;
+}
+
+int GetAllPropertiesPacket::getId() {
+    return 0x00;
+}
+
+string GetAllPropertiesPacket::toString() {
+    return "GetAllPropertiesPacket{}";
 }

@@ -8,21 +8,24 @@
 
 #include <network/properties/protocol/OutPacket.hpp>
 #include <map>
+#include <network/properties/structures/Property.hpp>
 
 using namespace std;
 
 class AllPropertiesPacket : public OutPacket {
 
-    map<string, int> *props;
+    map<string, PropertyPointer> *props;
 public:
-    static PacketType TYPE;
 
-    AllPropertiesPacket(map<string, int> *props);
+    AllPropertiesPacket(map<string, PropertyPointer> *props);
 
-    void write(TCPClient *client) override;
+    void write(TCPSocketClient *client) override;
 
     PacketType getType() override;
 
+    int getId() override;
+
+    string toString() override;
 };
 
 

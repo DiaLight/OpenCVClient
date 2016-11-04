@@ -2,7 +2,7 @@
 // Created by dialight on 31.10.16.
 //
 #include "network/properties/PropertiesClient.hpp"
-#include <sstream>
+#include "network/properties/structures/IntProperty.hpp"
 #include <string.h>
 #include <iostream>
 #include <unistd.h>
@@ -16,85 +16,120 @@
 #include <network/properties/protocol/out/RemovePropertyPacket.hpp>
 #include <network/properties/protocol/out/PongPacket.hpp>
 #include <network/properties/protocol/out/AllPropertiesPacket.hpp>
+#include <network/properties/structures/DoubleProperty.hpp>
 
 using namespace std;
 
+bool PropertiesClient::DEBUG = true;
+vector<PacketType> PropertiesClient::IGNORE_PACKET = {PacketType::PING, PacketType::PONG};
+
 PropertiesClient::PropertiesClient(ServerAddr *addr) : TCPPacketClient() {
     this->addr = addr;
-    this->thr = NULL;
+    this->clientThread = NULL;
 }
 
 PropertiesClient::~PropertiesClient() {
-    if(thr != NULL) {
-        thr->join();
-        delete thr;
+    if(clientThread != NULL) {
+        clientThread->join();
+        delete clientThread;
+    }
+    for(auto iterator = props.begin(); iterator != props.end(); iterator++) {
+        delete iterator->second;
     }
 }
 
 int PropertiesClient::getInt(const string& name, int defVal) {
     auto it = props.find(name);
-    if (it != props.end()) return it->second;
-    props.insert(pair<string, int>(name, defVal));
-    if (isConnected()) {
-        try {
-            AddPropertyPacket pa(name, defVal);
-            sendPacket(&pa); //thread safe
-        } catch (IOException e) {
-            e.printError();
-        }
-    }
+    if (it != props.end()) return ((IntProperty *) it->second)->get();
+    PropertyPointer prop = new IntProperty(defVal);
+    props.insert(pair<string, PropertyPointer>(name, prop));
+    AddPropertyPacket pa(name, prop);
+    trySendPacket(&pa);
+    return defVal;
+}
+
+double PropertiesClient::getDouble(const string& name, double defVal) {
+    auto it = props.find(name);
+    if (it != props.end()) return ((DoubleProperty *) it->second)->get();
+    PropertyPointer prop = new DoubleProperty(defVal);
+    props.insert(pair<string, PropertyPointer>(name, prop));
+    AddPropertyPacket pa(name, prop);
+    trySendPacket(&pa);
+    return defVal;
+}
+
+int PropertiesClient::getSelect(const string &name, initializer_list<const string> list, int defVal) {
+    auto it = props.find(name);
+    if (it != props.end()) return ((SelectProperty *) it->second)->getSelected();
+    PropertyPointer prop = new SelectProperty(list, defVal);
+    props.insert(pair<string, PropertyPointer>(name, prop));
+    AddPropertyPacket pa(name, prop);
+    trySendPacket(&pa);
     return defVal;
 }
 
 void PropertiesClient::runAsync() {
-    thr = new thread(connectStatic, this);
+    clientThread = new thread(connectStatic, this);
+}
+
+template <typename T>
+bool contains(vector<T> list, T x) {
+    for (auto it = list.begin(); it != list.end(); ++it)
+        if (*it == x) return true;
+    return false;
 }
 
 void PropertiesClient::onOutPacketSend(OutPacket *p) {
-    cout << "out: " << p->getType().getName() << endl;
+    if(DEBUG && !contains(IGNORE_PACKET, p->getType())) {
+        cout << "Out packet(" << p->getId() << "): " << p->toString() << endl;
+    }
 }
 
 void PropertiesClient::onInPacketReceived(InPacket *p) {
-    cout << "in: " << p->getType().getName() << endl;
-    if(p->getType() == PingPacket::TYPE) {
-        PingPacket *packet = (PingPacket *) p;
-        PongPacket pa(packet->time);
-        sendPacket(&pa);
-        return;
+    if(DEBUG && !contains(IGNORE_PACKET, p->getType())) {
+        cout << "In packet(" << p->getId() << "): " << p->toString() << endl;
     }
-    if(p->getType() == GetAllPropertiesPacket::TYPE) {
-        AllPropertiesPacket pa(&props);
-        sendPacket(&pa);
-        return;
-    }
-    if(p->getType() == GetPropertyPacket::TYPE) {
-        GetPropertyPacket *packet = (GetPropertyPacket *) p;
-        auto it = props.find(packet->key);
-        if (it != props.end()) {
-            AddPropertyPacket pa(packet->key, it->second);
+    switch (p->getType()) {
+        case GET_ALL_PROPERTIES: {
+            AllPropertiesPacket pa(&props);
             sendPacket(&pa);
-        } else {
-            RemovePropertyPacket pa(packet->key);
+        }break;
+        case GET_PROPERTY: {
+            GetPropertyPacket *packet = (GetPropertyPacket *) p;
+            auto it = props.find(packet->key);
+            if (it != props.end()) {
+                AddPropertyPacket pa(packet->key, it->second);
+                sendPacket(&pa);
+            } else {
+                RemovePropertyPacket pa(packet->key);
+                sendPacket(&pa);
+            }
+        }break;
+        case CHANGE_PROPERTY: {
+            ChangePropertyPacket *packet = (ChangePropertyPacket *) p;
+            auto it = props.find(packet->key);
+            if (it != props.end()) {
+                if(it->second->getType() != packet->value->getType()) {
+
+                }
+                it->second = packet->value;
+            } else {
+                props.insert(pair<string, PropertyPointer>(packet->key, packet->value));
+            }
+        }break;
+        case RESET_PROPERTY: {
+            ResetPropertyPacket *packet = (ResetPropertyPacket *) p;
+            props.erase(packet->key);
+        }break;
+        case PING: {
+            PingPacket *packet = (PingPacket *) p;
+            PongPacket pa(packet->time);
             sendPacket(&pa);
-        }
-        return;
+        }break;
+        default:
+            cerr << "Unhandled packet id: " << p->getId() << endl;
+            break;
     }
-    if(p->getType() == ChangePropertyPacket::TYPE) {
-        ChangePropertyPacket *packet = (ChangePropertyPacket *) p;
-        auto it = props.find(packet->key);
-        if (it != props.end()) {
-            it->second = packet->value;
-        } else {
-            props.insert(pair<string, int>(packet->key, packet->value));
-        }
-        return;
-    }
-    if(p->getType() == ResetPropertyPacket::TYPE) {
-        ResetPropertyPacket *packet = (ResetPropertyPacket *) p;
-        props.erase(packet->key);
-        return;
-    }
-    throw RuntimeException("Unknown packet type. Please, register your packet in protocol.");
 }
 
 void PropertiesClient::connect() {
@@ -107,29 +142,29 @@ void PropertiesClient::connect() {
     protocol.registerInPacket(3, ResetPropertyPacket::constructor);
     protocol.registerInPacket(0xFF, PingPacket::constructor);
 
-    protocol.registerOutPacket(0, AllPropertiesPacket::TYPE);
-    protocol.registerOutPacket(1, AddPropertyPacket::TYPE);
-    protocol.registerOutPacket(3, RemovePropertyPacket::TYPE);
-    protocol.registerOutPacket(0xFF, PongPacket::TYPE);
-
     setProtocol(&protocol);
 
     registerInPacketHandler(onInPacketReceivedStatic, this);
     registerOutPacketHandler(onOutPacketSendStatic, this);
 
-    while(alive) {
-        try {
-            ConnectionGuard guard(this, addr); //life cycle safe
-            cout << "Properties client connected" << endl;
-            while (alive && isConnected()) {
-                processPacket();
+    try {
+        while(alive) {
+            try {
+                ConnectionGuard guard(this, addr); //life cycle safe
+                while (alive && isConnected()) {
+                    processPacket();
+                }
+                //guard destructor close connection
+            } catch(IOException e) {
+                e.printError();
             }
-            //guard destructor close connection
-        } catch(IOException e) {
-            e.printError();
+            sleep(3);
         }
-        sleep(3);
+    } catch (RuntimeException e) {
+        e.printError();
+        alive = false;
     }
     pthread_exit(NULL);
 }
+
 

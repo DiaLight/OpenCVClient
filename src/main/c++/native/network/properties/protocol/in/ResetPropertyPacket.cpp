@@ -4,14 +4,22 @@
 
 #include "network/properties/protocol/in/ResetPropertyPacket.hpp"
 
-PacketType ResetPropertyPacket::TYPE("ResetPropertyPacket");
-
 ResetPropertyPacket::ResetPropertyPacket() : InPacket() {}
 
-void ResetPropertyPacket::read(TCPClient *client) {
+void ResetPropertyPacket::read(TCPSocketClient *client) {
     key = client->readUTF();
 }
 
 PacketType ResetPropertyPacket::getType() {
-    return TYPE;
+    return PacketType::RESET_PROPERTY;
+}
+
+int ResetPropertyPacket::getId() {
+    return 0x03;
+}
+
+string ResetPropertyPacket::toString() {
+    stringstream ss;
+    ss << "ResetPropertyPacket{key=" << key << "}";
+    return ss.str();
 }

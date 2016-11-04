@@ -12,7 +12,7 @@
 typedef void (*InPacketHandler)(InPacket *, void *);
 typedef void (*OutPacketHandler)(OutPacket *, void *);
 
-class TCPPacketClient : protected TCPClient {
+class TCPPacketClient : protected TCPSocketClient {
 
     Protocol *protocol;
 
@@ -22,6 +22,7 @@ class TCPPacketClient : protected TCPClient {
     void *outArgs;
 
     mutex writeLock;
+
 protected:
     TCPPacketClient();
 
@@ -33,6 +34,8 @@ public:
     void setProtocol(Protocol *protocol);
 
     void sendPacket(OutPacket *packet);
+
+    bool trySendPacket(OutPacket *packet);
 
     void processPacket();
 

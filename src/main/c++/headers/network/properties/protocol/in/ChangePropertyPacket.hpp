@@ -7,24 +7,29 @@
 
 
 #include <network/properties/protocol/InPacket.hpp>
+#include <network/properties/structures/Property.hpp>
 
 class ChangePropertyPacket : public InPacket {
 
 public:
     string key;
-    int value;
-    static PacketType TYPE;
+    Property *value;
 
     ChangePropertyPacket();
 
-    void read(TCPClient *client) override;
+    virtual ~ChangePropertyPacket();
+
+    void read(TCPSocketClient *client) override;
 
     PacketType getType() override;
+
+    int getId() override;
 
     static InPacket *constructor() {
         return new ChangePropertyPacket();
     }
 
+    string toString() override;
 };
 
 

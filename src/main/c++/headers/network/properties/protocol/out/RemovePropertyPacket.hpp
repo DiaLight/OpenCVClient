@@ -12,13 +12,16 @@ class RemovePropertyPacket : public OutPacket {
 
     string key;
 public:
-    static PacketType TYPE;
 
     RemovePropertyPacket(const string &key);
 
-    void write(TCPClient *client) override;
+    void write(TCPSocketClient *client) override;
 
     PacketType getType() override;
+
+    int getId() override;
+
+    string toString() override;
 
 };
 

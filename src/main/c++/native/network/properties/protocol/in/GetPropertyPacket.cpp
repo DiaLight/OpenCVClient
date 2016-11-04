@@ -4,14 +4,22 @@
 
 #include "network/properties/protocol/in/GetPropertyPacket.hpp"
 
-PacketType GetPropertyPacket::TYPE("GetPropertyPacket");
-
 GetPropertyPacket::GetPropertyPacket() : InPacket() {}
 
-void GetPropertyPacket::read(TCPClient *client) {
+void GetPropertyPacket::read(TCPSocketClient *client) {
     key = client->readUTF();
 }
 
 PacketType GetPropertyPacket::getType() {
-    return TYPE;
+    return PacketType::GET_PROPERTY;
+}
+
+int GetPropertyPacket::getId() {
+    return 0x01;
+}
+
+string GetPropertyPacket::toString() {
+    stringstream ss;
+    ss << "ChangePropertyPacket{key=" << key << "}";
+    return ss.str();
 }

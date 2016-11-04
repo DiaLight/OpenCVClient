@@ -7,20 +7,23 @@
 
 
 #include <network/properties/protocol/OutPacket.hpp>
+#include <network/properties/structures/Property.hpp>
 
 class AddPropertyPacket : public OutPacket {
 
     string key;
-    int value;
+    Property *value;
 public:
-    static PacketType TYPE;
 
-    AddPropertyPacket(const string &key, int value);
+    AddPropertyPacket(const string &key, Property *value);
 
-    void write(TCPClient *client) override;
+    void write(TCPSocketClient *client) override;
 
     PacketType getType() override;
 
+    int getId() override;
+
+    string toString() override;
 };
 
 

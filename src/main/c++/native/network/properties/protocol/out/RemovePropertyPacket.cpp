@@ -4,16 +4,24 @@
 
 #include "network/properties/protocol/out/RemovePropertyPacket.hpp"
 
-PacketType RemovePropertyPacket::TYPE("RemovePropertyPacket");
-
 RemovePropertyPacket::RemovePropertyPacket(const string &key) : key(key) {
 
 }
 
-void RemovePropertyPacket::write(TCPClient *client) {
+void RemovePropertyPacket::write(TCPSocketClient *client) {
     client->writeUTF(key);
 }
 
 PacketType RemovePropertyPacket::getType() {
-    return TYPE;
+    return PacketType::REMOVE_PROPERTY;
+}
+
+int RemovePropertyPacket::getId() {
+    return 0x03;
+}
+
+string RemovePropertyPacket::toString() {
+    stringstream ss;
+    ss << "RemovePropertyPacket{key=" << key << "}";
+    return ss.str();
 }

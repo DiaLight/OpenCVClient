@@ -5,7 +5,7 @@
 #ifndef OPENCVCLIENT_INPACKET_HPP
 #define OPENCVCLIENT_INPACKET_HPP
 
-#include <network/properties/TCPClient.hpp>
+#include <network/properties/TCPSocketClient.hpp>
 #include "Packet.hpp"
 
 class InPacket : public Packet {
@@ -14,7 +14,7 @@ public:
 
     InPacket();
 
-    virtual void read(TCPClient *client) = 0;
+    virtual void read(TCPSocketClient *client) = 0;
 
 };
 

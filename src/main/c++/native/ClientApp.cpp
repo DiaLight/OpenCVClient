@@ -16,11 +16,13 @@
 #include <cstdlib>
 #include <sstream>
 #include <csignal>
+#include <iomanip>
 #include "Profiler.hpp"
 #include "network/stream/StreamClient.hpp"
 #include "network/stream/ImagePacket.hpp"
 #include "opencv/OpenCVTool.hpp"
 #include "network/properties/PropertiesClient.hpp"
+#include "network/properties/structures/SelectProperty.hpp"
 
 using namespace std;
 using namespace cv;
@@ -67,44 +69,45 @@ int main(int argc, char** argv) {
             prof.point("Capture");
 
             cvtColor(frame, gray, COLOR_BGR2GRAY);
-            switch(propc.getInt("method", 2)) {
+            switch(propc.getSelect("method", {"Face detect", "Lines", "Contours"}, 0)) {
                 case 0:
-                    tool.gaussianBlur(gray, 7, 15);
-                    tool.canny(gray, 0, 300); //обводит резкие линии(детектор границ Кенни)
+                    tool.gaussianBlur(gray, 7, 1.5);
+                    tool.canny(gray, 0, 30.0); //обводит резкие линии(детектор границ Кенни)
                     tool.faceDetect.detectMultiScale(gray, frame);
                     break;
                 case 1:
-                    tool.gaussianBlur(gray, 7, 15);
-                    tool.canny(gray, 0, 300);
+                    tool.gaussianBlur(gray, 7, 1.5);
+                    tool.canny(gray, 0, 30.0);
                     tool.houghLines(gray, frame);
                     break;
                 case 2:
-                    tool.gaussianBlur(gray, 7, 15);
-                    tool.canny(gray, 0, 250);
+                    tool.gaussianBlur(gray, 7, 1.5);
+                    tool.canny(gray, 0, 25.0);
                     tool.findContours(gray, frame);
                     break;
                     
                 case 10: //тест блюра
-                    tool.gaussianBlur(gray, 7, 15); //размытие(быстрое убирание помех на изображении)
+                    tool.gaussianBlur(gray, 7, 1.5); //размытие(быстрое убирание помех на изображении)
                     frame = gray;
                     break;
                 case 11: //тест метода Кенни на блюре
-                    tool.gaussianBlur(gray, 7, 15);
-                    tool.canny(gray, 0, 300); //обводит резкие линии(детектор границ Кенни)
+                    tool.gaussianBlur(gray, 7, 1.5);
+                    tool.canny(gray, 0, 30.0); //обводит резкие линии(детектор границ Кенни)
                     frame = gray;
                     break;
                 case 12: //тест порогового преобразования на блюре
-                    tool.gaussianBlur(gray, 3, 0);
+                    tool.gaussianBlur(gray, 3, 0.0);
                     tool.threshold(gray);
                     bitwise_not(gray, gray);
                     frame = gray;
                     break;
                 case 13: //тест адаптивного порогового преобразования на блюре
-                    tool.gaussianBlur(gray, 3, 0);
+                    tool.gaussianBlur(gray, 3, 0.0);
                     tool.adaptiveThreshold(gray);
                     bitwise_not(gray, gray);
                     frame = gray;
                     break;
+                default:break;
             }
             prof.point("OpenCV");
 

@@ -12,13 +12,16 @@ class PongPacket : public OutPacket {
 
     __uint64_t time;
 public:
-    static PacketType TYPE;
 
     PongPacket(__uint64_t time);
 
-    void write(TCPClient *client) override;
+    void write(TCPSocketClient *client) override;
 
     PacketType getType() override;
+
+    int getId() override;
+
+    string toString() override;
 };
 
 #endif //OPENCVCLIENT_PONGPACKET_HPP

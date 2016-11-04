@@ -7,22 +7,25 @@
 
 
 #include <network/properties/protocol/InPacket.hpp>
+#include <network/properties/protocol/PacketType.hpp>
 
 class GetAllPropertiesPacket : public InPacket {
 
 public:
-    static PacketType TYPE;
 
     GetAllPropertiesPacket();
 
-    void read(TCPClient *client) override;
+    void read(TCPSocketClient *client) override;
 
     PacketType getType() override;
+
+    int getId() override;
 
     static InPacket *constructor() {
         return new GetAllPropertiesPacket();
     }
 
+    string toString() override;
 };
 
 

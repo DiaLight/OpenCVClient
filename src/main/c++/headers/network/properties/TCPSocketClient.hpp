@@ -7,37 +7,37 @@
 
 #include "network/ServerAddr.hpp"
 
-class TCPClient;
+class TCPSocketClient;
 
 class ConnectionGuard {
-    TCPClient *client;
+    TCPSocketClient *client;
     ServerAddr *addr;
 public:
-    ConnectionGuard(TCPClient *client, ServerAddr *addr);
+    ConnectionGuard(TCPSocketClient *client, ServerAddr *addr);
 
     virtual ~ConnectionGuard();
 };
 
-class TCPClient {
+class TCPSocketClient {
     bool binded;
     bool connected;
     int cliDesc;
 
     char stringBuf[4096];
 public:
-    TCPClient();
+    TCPSocketClient();
 
-    TCPClient(const TCPClient&) = delete; //deleted copy constructor
-    TCPClient& operator=(const TCPClient &) = delete; //deleted copy assignment operato
+    TCPSocketClient(const TCPSocketClient&) = delete; //deleted copy constructor
+    TCPSocketClient& operator=(const TCPSocketClient &) = delete; //deleted copy assignment operato
 
-    virtual ~TCPClient();
+    virtual ~TCPSocketClient();
 
 private:
     friend class ConnectionGuard;
     void connectTCP(ServerAddr *addr);
-    void close();
 
 public:
+    void close();
     bool isConnected();
 
     string readUTF();
@@ -48,6 +48,9 @@ public:
 
     int readInt();
     void writeInt(int i);
+
+    double readDouble();
+    void writeDouble(double i);
 
     __uint64_t readLong();
     void writeLong(__uint64_t i);

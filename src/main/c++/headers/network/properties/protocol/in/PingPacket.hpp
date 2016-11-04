@@ -12,18 +12,20 @@ class PingPacket : public InPacket {
 
 public:
     __uint64_t time;
-    static PacketType TYPE;
 
     PingPacket();
 
-    void read(TCPClient *client) override;
+    void read(TCPSocketClient *client) override;
 
     PacketType getType() override;
+
+    int getId() override;
 
     static InPacket *constructor() {
         return new PingPacket();
     }
 
+    string toString() override;
 };
 
 

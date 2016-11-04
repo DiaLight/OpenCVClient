@@ -4,16 +4,25 @@
 
 #include "network/properties/protocol/out/AddPropertyPacket.hpp"
 
-PacketType AddPropertyPacket::TYPE("AddPropertyPacket");
-
-AddPropertyPacket::AddPropertyPacket(const string &key, int value) : key(key), value(value) {
+AddPropertyPacket::AddPropertyPacket(const string &key, Property *value) : key(key), value(value) {
 }
 
-void AddPropertyPacket::write(TCPClient *client) {
+void AddPropertyPacket::write(TCPSocketClient *client) {
     client->writeUTF(key);
-    client->writeInt(value);
+    client->writeByte(value->getType());
+    value->write(client);
 }
 
 PacketType AddPropertyPacket::getType() {
-    return TYPE;
+    return PacketType::ADD_PROPERTY;
+}
+
+int AddPropertyPacket::getId() {
+    return 0x01;
+}
+
+string AddPropertyPacket::toString() {
+    stringstream ss;
+    ss << "ChangePropertyPacket{key=" << key << ", value=" << value->toString() << "}";
+    return ss.str();
 }

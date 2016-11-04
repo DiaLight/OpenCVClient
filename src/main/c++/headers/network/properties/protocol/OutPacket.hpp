@@ -5,7 +5,7 @@
 #ifndef OPENCVCLIENT_OUTPACKET_HPP
 #define OPENCVCLIENT_OUTPACKET_HPP
 
-#include <network/properties/TCPClient.hpp>
+#include <network/properties/TCPSocketClient.hpp>
 #include "Packet.hpp"
 
 class OutPacket : public Packet {
@@ -13,7 +13,7 @@ class OutPacket : public Packet {
 public:
     OutPacket();
 
-    virtual void write(TCPClient *client) = 0;
+    virtual void write(TCPSocketClient *client) = 0;
 
 };
 

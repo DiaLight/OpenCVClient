@@ -20,27 +20,35 @@
 #include <thread>
 #include <mutex>
 #include <network/properties/protocol/Protocol.hpp>
-#include "TCPClient.hpp"
+#include "TCPSocketClient.hpp"
 #include "TCPPacketClient.hpp"
+#include "network/properties/structures/SelectProperty.hpp"
 
 using namespace std;
 
 class PropertiesClient : TCPPacketClient {
+
     ServerAddr *addr;
 
-    thread *thr;
-    map <string, int> props;
+    thread *clientThread;
+    map <string, PropertyPointer> props;
 public:
+    static bool DEBUG;
+    static vector<PacketType> IGNORE_PACKET;
+
     PropertiesClient(ServerAddr *addr);
 
     PropertiesClient(const PropertiesClient&) = delete; //deleted copy constructor
-    PropertiesClient& operator=(const PropertiesClient &) = delete; //deleted copy assignment operato
+    PropertiesClient& operator=(const PropertiesClient &) = delete; //deleted copy assignment operator
     
     virtual ~PropertiesClient();
 
     int getInt(const string& name, int defVal);
+    double getDouble(const string& name, double defVal);
     
     void runAsync();
+
+    int getSelect(const string& name, initializer_list<const string> list, int def);
 
 private:
 
@@ -58,6 +66,7 @@ private:
         ((PropertiesClient *) args)->onOutPacketSend(p);
     }
     void onOutPacketSend(OutPacket *p);
+
 };
 
 #endif /* CONFIGSERVER_HPP */

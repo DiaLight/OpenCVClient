@@ -12,18 +12,20 @@ class ResetPropertyPacket : public InPacket {
 
 public:
     string key;
-    static PacketType TYPE;
 
     ResetPropertyPacket();
 
-    void read(TCPClient *client) override;
+    void read(TCPSocketClient *client) override;
 
     PacketType getType() override;
+
+    int getId() override;
 
     static InPacket *constructor() {
         return new ResetPropertyPacket();
     }
 
+    string toString() override;
 };
 
 

@@ -7,7 +7,6 @@
 
 
 #include <map>
-#include "PacketType.hpp"
 #include "InPacket.hpp"
 #include "OutPacket.hpp"
 
@@ -15,17 +14,13 @@ using namespace std;
 
 class Protocol {
     map<int, InPacketConstructor> inPackets;
-    map<PacketType, int> outPackets;
 
 public:
 
     void registerInPacket(int id, InPacketConstructor packetConstructor);
 
-    void registerOutPacket(int id, PacketType &type);
-
     InPacket *newInstance(int id);
 
-    int getId(OutPacket *packet);
 };
 
 

@@ -2,10 +2,10 @@
 // Created by dialight on 01.11.16.
 //
 
-#include <iostream>
-#include "network/properties/TCPPacketClient.hpp"
+#include "network/properties/PropertiesClient.hpp"
+#include <network/exceptions/IOException.hpp>
 
-TCPPacketClient::TCPPacketClient() : TCPClient() {
+TCPPacketClient::TCPPacketClient() : TCPSocketClient() {
 
 }
 
@@ -26,9 +26,20 @@ void TCPPacketClient::setProtocol(Protocol *protocol) {
 void TCPPacketClient::sendPacket(OutPacket *packet) {
     lock_guard<mutex> lock(this->writeLock);
     outHandler(packet, outArgs);
-    writeByte(protocol->getId(packet));
+    writeByte(packet->getId());
     packet->write(this);
     //lock_guard<mutex> destructor unlock writeLock
+}
+
+bool TCPPacketClient::trySendPacket(OutPacket *packet) {
+    if (isConnected()) {
+        try {
+            sendPacket(packet); //thread safe
+        } catch (IOException e) {
+            e.printError();
+            close();
+        }
+    }
 }
 
 void TCPPacketClient::processPacket() {

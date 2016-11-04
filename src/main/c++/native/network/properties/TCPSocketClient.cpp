@@ -6,9 +6,9 @@
 #include <unistd.h>
 #include <network/exceptions/RuntimeException.hpp>
 #include <network/exceptions/IOException.hpp>
-#include "network/properties/TCPClient.hpp"
+#include "network/properties/TCPSocketClient.hpp"
 
-ConnectionGuard::ConnectionGuard(TCPClient *client, ServerAddr *addr) : client(client), addr(addr) {
+ConnectionGuard::ConnectionGuard(TCPSocketClient *client, ServerAddr *addr) : client(client), addr(addr) {
     client->connectTCP(addr);
 }
 
@@ -16,16 +16,16 @@ ConnectionGuard::~ConnectionGuard() {
     client->close();
 }
 
-TCPClient::TCPClient() {
+TCPSocketClient::TCPSocketClient() {
     this->binded = false;
     this->connected = false;
 }
 
-TCPClient::~TCPClient() {
+TCPSocketClient::~TCPSocketClient() {
 
 }
 
-void TCPClient::connectTCP(ServerAddr *addr) {
+void TCPSocketClient::connectTCP(ServerAddr *addr) {
     if(!binded) {
         cliDesc = socket(AF_INET, SOCK_STREAM, 0);
         if (cliDesc < 0) {
@@ -39,18 +39,18 @@ void TCPClient::connectTCP(ServerAddr *addr) {
     connected = true;
 }
 
-void TCPClient::close() {
+void TCPSocketClient::close() {
     connected = false;
     if(!binded) return;
     ::close(cliDesc);
     binded = false;
 }
 
-bool TCPClient::isConnected() {
+bool TCPSocketClient::isConnected() {
     return connected;
 }
 
-string TCPClient::readUTF() {
+string TCPSocketClient::readUTF() {
     size_t size = (size_t) readShort();
     ssize_t len = recv(cliDesc, stringBuf, size, 0); //MSG_WAITALL
     if (len != size) {
@@ -59,7 +59,7 @@ string TCPClient::readUTF() {
     }
     return string(stringBuf, size);
 }
-void TCPClient::writeUTF(const string& str) {
+void TCPSocketClient::writeUTF(const string& str) {
     writeShort((int) str.length());
     ssize_t len = send(cliDesc, str.c_str(), str.length(), MSG_NOSIGNAL);
     if(len != str.length()) {
@@ -67,7 +67,7 @@ void TCPClient::writeUTF(const string& str) {
     }
 }
 
-int TCPClient::readShort() {
+int TCPSocketClient::readShort() {
     int s = 0;
     ssize_t len = recv(cliDesc, &s, 2, 0); //MSG_WAITALL
     if (len != 2) {
@@ -76,14 +76,14 @@ int TCPClient::readShort() {
     }
     return __bswap_16(s);
 }
-void TCPClient::writeShort(int s) {
+void TCPSocketClient::writeShort(int s) {
     s = __bswap_16(s);
     if (send(cliDesc, &s, 2, MSG_NOSIGNAL) != 2) {
         throw IOException(string("Error on writeShort(): ") + strerror(errno));
     }
 }
 
-int TCPClient::readInt() {
+int TCPSocketClient::readInt() {
     unsigned int s = 0;
     ssize_t len = recv(cliDesc, &s, 4, 0); //MSG_WAITALL
     if (len != 4) {
@@ -92,15 +92,39 @@ int TCPClient::readInt() {
     }
     return __bswap_32(s);
 }
-void TCPClient::writeInt(int i) {
+void TCPSocketClient::writeInt(int i) {
     i = __bswap_32((unsigned int) i);
     if (send(cliDesc, &i, 4, MSG_NOSIGNAL) != 4) {
         throw IOException(string("Error on writeInt(): ") + strerror(errno));
     }
 }
 
-__uint64_t TCPClient::readLong() {
-    __uint64_t s = 0;
+union RawDouble {
+    uint64_t  i;
+    double    d;
+};
+
+double TCPSocketClient::readDouble() {
+    RawDouble rd;
+    ssize_t len = recv(cliDesc, &rd.i, 8, 0); //MSG_WAITALL
+    if (len != 8) {
+        if (len == 0) throw IOException(string("Error on readDouble(): End of socket"));
+        throw IOException(string("Error on readDouble(): ") + strerror(errno));
+    }
+    rd.i = __bswap_64(rd.i);
+    return rd.d;
+}
+void TCPSocketClient::writeDouble(double d) {
+    RawDouble rd;
+    rd.d = d;
+    rd.i = __bswap_64(rd.i);
+    if (send(cliDesc, &rd.i, 8, MSG_NOSIGNAL) != 8) {
+        throw IOException(string("Error on writeDouble(): ") + strerror(errno));
+    }
+}
+
+__uint64_t TCPSocketClient::readLong() {
+    uint64_t s = 0;
     ssize_t len = recv(cliDesc, &s, 8, 0); //MSG_WAITALL
     if (len != 8) {
         if (len == 0) throw IOException(string("Error on readLong(): End of socket"));
@@ -108,14 +132,14 @@ __uint64_t TCPClient::readLong() {
     }
     return __bswap_64(s);
 }
-void TCPClient::writeLong(__uint64_t i) {
+void TCPSocketClient::writeLong(uint64_t i) {
     i = __bswap_64(i);
     if (send(cliDesc, &i, 8, MSG_NOSIGNAL) != 8) {
         throw IOException(string("Error on writeLong(): ") + strerror(errno));
     }
 }
 
-int TCPClient::readByte() {
+int TCPSocketClient::readByte() {
     int i = 0;
     ssize_t len = recv(cliDesc, &i, 1, 0); //MSG_WAITALL
     if (len != 1) {
@@ -124,13 +148,13 @@ int TCPClient::readByte() {
     }
     return i;
 }
-void TCPClient::writeByte(int i) {
+void TCPSocketClient::writeByte(int i) {
     if (send(cliDesc, &i, 1, MSG_NOSIGNAL) != 1) {
         throw IOException(string("Error on writeByte(): ") + strerror(errno));
     }
 }
 
-bool TCPClient::readBool() {
+bool TCPSocketClient::readBool() {
     int i = 0;
     ssize_t len = recv(cliDesc, &i, 1, 0); //MSG_WAITALL
     if (len != 1) {
@@ -139,7 +163,7 @@ bool TCPClient::readBool() {
     }
     return i != 0;
 }
-void TCPClient::writeBool(bool b) {
+void TCPSocketClient::writeBool(bool b) {
     int i = (b ? 1 : 0);
     if (send(cliDesc, &i, 1, MSG_NOSIGNAL) != 1) {
         throw IOException(string("Error on writeBool(): ") + strerror(errno));
