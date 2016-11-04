@@ -4,12 +4,14 @@
 
 #include "network/properties/structures/IntProperty.hpp"
 
-IntProperty::IntProperty() {
+IntProperty::IntProperty(int defVal) : value(defVal) {}
 
+int IntProperty::get() {
+    return value;
 }
 
-IntProperty::IntProperty(int defVal) : value(defVal) {
-
+void IntProperty::updateFrom(Property *prop) {
+    this->value = ((IntProperty *) prop)->value;
 }
 
 void IntProperty::read(TCPSocketClient *client) {
@@ -22,10 +24,6 @@ void IntProperty::write(TCPSocketClient *client) {
 
 PropertyType IntProperty::getType() {
     return PropertyType::INT;
-}
-
-int IntProperty::get() {
-    return value;
 }
 
 string IntProperty::toString() {

@@ -23,8 +23,8 @@ void FaceDetect::detectMultiScale(Mat gray, Mat frame) {
     //        Canny(gray, gray, 0, 30, 3);
     int flags = CV_HAAR_SCALE_IMAGE;
     vector<Rect> faces;
-    int min_face_size = propc->getInt("detectMultiScale.min_size", 100);
-    int max_face_size = propc->getInt("detectMultiScale.max_size", 200);
+    int min_face_size = propc->getInt("FaceDetect.min_size", 100);
+    int max_face_size = propc->getInt("FaceDetect.max_size", 200);
     face_cascade.detectMultiScale(
             gray, faces, 1.1, 2, flags,
             Size(min_face_size, min_face_size),

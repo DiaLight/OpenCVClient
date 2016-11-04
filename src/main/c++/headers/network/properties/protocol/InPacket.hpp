@@ -12,8 +12,6 @@ class InPacket : public Packet {
 
 public:
 
-    InPacket();
-
     virtual void read(TCPSocketClient *client) = 0;
 
 };

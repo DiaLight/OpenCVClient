@@ -4,14 +4,14 @@
 
 #include "network/properties/structures/DoubleProperty.hpp"
 
-DoubleProperty::DoubleProperty() {
-
-}
-
 DoubleProperty::DoubleProperty(double value) : value(value) {}
 
 double DoubleProperty::get() {
     return value;
+}
+
+void DoubleProperty::updateFrom(Property *prop) {
+    this->value = ((DoubleProperty *) prop)->value;
 }
 
 void DoubleProperty::read(TCPSocketClient *client) {

@@ -11,10 +11,12 @@ class DoubleProperty : public Property {
 
     double value;
 public:
-    DoubleProperty();
+    DoubleProperty() = default;
     DoubleProperty(double value);
 
     double get();
+
+    void updateFrom(Property *prop) override;
 
     void read(TCPSocketClient *client) override;
 
@@ -23,6 +25,7 @@ public:
     PropertyType getType() override;
 
     string toString() override;
+
 };
 
 

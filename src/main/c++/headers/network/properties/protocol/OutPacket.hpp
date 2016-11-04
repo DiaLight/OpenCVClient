@@ -11,7 +11,6 @@
 class OutPacket : public Packet {
 
 public:
-    OutPacket();
 
     virtual void write(TCPSocketClient *client) = 0;
 

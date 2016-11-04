@@ -12,10 +12,12 @@ class IntProperty : public Property {
 
     int value;
 public:
-    IntProperty();
+    IntProperty() = default;
     IntProperty(int defVal);
 
     int get();
+
+    void updateFrom(Property *prop) override;
 
     void read(TCPSocketClient *client) override;
 
@@ -23,6 +25,7 @@ public:
     PropertyType getType() override;
 
     string toString() override;
+
 };
 
 

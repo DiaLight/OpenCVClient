@@ -58,10 +58,10 @@ double PropertiesClient::getDouble(const string& name, double defVal) {
     return defVal;
 }
 
-int PropertiesClient::getSelect(const string &name, initializer_list<const string> list, int defVal) {
+int PropertiesClient::getSelect(const string &name, vector<string> *values, int defVal) {
     auto it = props.find(name);
     if (it != props.end()) return ((SelectProperty *) it->second)->getSelected();
-    PropertyPointer prop = new SelectProperty(list, defVal);
+    PropertyPointer prop = new SelectProperty(values, defVal);
     props.insert(pair<string, PropertyPointer>(name, prop));
     AddPropertyPacket pa(name, prop);
     trySendPacket(&pa);
@@ -81,13 +81,13 @@ bool contains(vector<T> list, T x) {
 
 void PropertiesClient::onOutPacketSend(OutPacket *p) {
     if(DEBUG && !contains(IGNORE_PACKET, p->getType())) {
-        cout << "Out packet(" << p->getId() << "): " << p->toString() << endl;
+        cout << "Out packet(id=" << p->getId() << "): " << p->toString() << endl;
     }
 }
 
 void PropertiesClient::onInPacketReceived(InPacket *p) {
     if(DEBUG && !contains(IGNORE_PACKET, p->getType())) {
-        cout << "In packet(" << p->getId() << "): " << p->toString() << endl;
+        cout << "In packet(id=" << p->getId() << "): " << p->toString() << endl;
     }
     switch (p->getType()) {
         case GET_ALL_PROPERTIES: {
@@ -110,9 +110,9 @@ void PropertiesClient::onInPacketReceived(InPacket *p) {
             auto it = props.find(packet->key);
             if (it != props.end()) {
                 if(it->second->getType() != packet->value->getType()) {
-
+                    throw new RuntimeException("Wrong type of property: " + packet->value->getType());
                 }
-                it->second = packet->value;
+                it->second->updateFrom(packet->value);
             } else {
                 props.insert(pair<string, PropertyPointer>(packet->key, packet->value));
             }

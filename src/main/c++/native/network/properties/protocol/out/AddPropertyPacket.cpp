@@ -23,6 +23,6 @@ int AddPropertyPacket::getId() {
 
 string AddPropertyPacket::toString() {
     stringstream ss;
-    ss << "ChangePropertyPacket{key=" << key << ", value=" << value->toString() << "}";
+    ss << "AddPropertyPacket{key=" << key << ", value=" << value->toString() << "}";
     return ss.str();
 }

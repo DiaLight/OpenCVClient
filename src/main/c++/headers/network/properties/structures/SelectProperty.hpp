@@ -13,13 +13,13 @@ using namespace std;
 
 class SelectProperty : public Property {
 
-    vector<string> selections;
+    vector<string> *selections;
     int selected;
 public:
 
     SelectProperty() = default;
 
-    SelectProperty(initializer_list<const string> list, int selected);
+    SelectProperty(vector<string> *selections, int selected);
 
     int getSelected();
 
@@ -30,6 +30,8 @@ public:
     PropertyType getType() override;
 
     string toString() override;
+
+    void updateFrom(Property *prop) override;
 };
 
 

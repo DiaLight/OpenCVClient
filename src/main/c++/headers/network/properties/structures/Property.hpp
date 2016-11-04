@@ -19,11 +19,11 @@ typedef Property *PropertyPointer;
 
 class Property {
 public:
+    virtual void updateFrom(Property *prop) = 0;
     virtual void read(TCPSocketClient *client) = 0;
     virtual void write(TCPSocketClient *client) = 0;
     virtual PropertyType getType() = 0;
     virtual string toString() = 0;
-
 };
 
 

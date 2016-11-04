@@ -13,16 +13,13 @@
 
 #include "AppState.hpp"
 #include <opencv2/opencv.hpp>
-#include <cstdlib>
-#include <sstream>
 #include <csignal>
 #include <iomanip>
 #include "Profiler.hpp"
 #include "network/stream/StreamClient.hpp"
 #include "network/stream/ImagePacket.hpp"
 #include "opencv/OpenCVTool.hpp"
-#include "network/properties/PropertiesClient.hpp"
-#include "network/properties/structures/SelectProperty.hpp"
+#include <utils/MacroEnumString.hpp>
 
 using namespace std;
 using namespace cv;
@@ -30,6 +27,17 @@ using namespace cv;
 void signalHandler(int signum) {
     alive = false;
 }
+
+#define MethodsMacro(m) \
+    m(RAW, "Без оработки") \
+    m(FACE_DETECT, "Face detect") \
+    m(LINES, "Lines") \
+    m(CONTOURS, "Contours") \
+    m(BLUR_TEST, "Тест блюра") \
+    m(KENNY_TEST, "Тест метода кенни") \
+    m(THRESHOLD_TEST, "тест порогового преобразования") \
+    m(ADAPTIVE_THRESHOLD_TEST, "тест адаптивного порогового преобразования")
+ENUM_STRING(MethodsMacro, Methods, MethodsVector)
 
 int main(int argc, char** argv) {
 
@@ -61,64 +69,62 @@ int main(int argc, char** argv) {
     Profiler prof(false);
     Mat frame;
     Mat gray;
-    try {
-        while (alive) {
-            prof.start();
+    while (alive) {
+        prof.start();
 
-            cap >> frame;
-            prof.point("Capture");
+        cap >> frame;
+        prof.point("Capture");
 
-            cvtColor(frame, gray, COLOR_BGR2GRAY);
-            switch(propc.getSelect("method", {"Face detect", "Lines", "Contours"}, 0)) {
-                case 0:
-                    tool.gaussianBlur(gray, 7, 1.5);
-                    tool.canny(gray, 0, 30.0); //обводит резкие линии(детектор границ Кенни)
-                    tool.faceDetect.detectMultiScale(gray, frame);
-                    break;
-                case 1:
-                    tool.gaussianBlur(gray, 7, 1.5);
-                    tool.canny(gray, 0, 30.0);
-                    tool.houghLines(gray, frame);
-                    break;
-                case 2:
-                    tool.gaussianBlur(gray, 7, 1.5);
-                    tool.canny(gray, 0, 25.0);
-                    tool.findContours(gray, frame);
-                    break;
-                    
-                case 10: //тест блюра
-                    tool.gaussianBlur(gray, 7, 1.5); //размытие(быстрое убирание помех на изображении)
-                    frame = gray;
-                    break;
-                case 11: //тест метода Кенни на блюре
-                    tool.gaussianBlur(gray, 7, 1.5);
-                    tool.canny(gray, 0, 30.0); //обводит резкие линии(детектор границ Кенни)
-                    frame = gray;
-                    break;
-                case 12: //тест порогового преобразования на блюре
-                    tool.gaussianBlur(gray, 3, 0.0);
-                    tool.threshold(gray);
-                    bitwise_not(gray, gray);
-                    frame = gray;
-                    break;
-                case 13: //тест адаптивного порогового преобразования на блюре
-                    tool.gaussianBlur(gray, 3, 0.0);
-                    tool.adaptiveThreshold(gray);
-                    bitwise_not(gray, gray);
-                    frame = gray;
-                    break;
-                default:break;
-            }
-            prof.point("OpenCV");
-
-            packet.setImage(frame);
-            prof.point("Compress");
-
-            packet.send(&scli, &addr); //very fast operation ( < 1 ms)
-
-            prof.end();
-            //if (waitKey(15) >= 0) break;
+        cvtColor(frame, gray, COLOR_BGR2GRAY);
+        switch(propc.getSelect("method", &MethodsVector, Methods::CONTOURS)) {
+            case Methods::RAW: break;
+            case Methods::FACE_DETECT:
+                tool.gaussianBlur(gray, 7, 1.5);
+                tool.faceDetect.detectMultiScale(gray, frame);
+                break;
+            case Methods::LINES:
+                tool.gaussianBlur(gray, 7, 1.5);
+                tool.canny(gray, 30, 60);
+                tool.houghLines(gray, frame);
+                break;
+            case Methods::CONTOURS:
+                tool.gaussianBlur(gray, 7, 1.5);
+                tool.canny(gray, 60, 80);
+                tool.findContours2(gray, frame);
+                break;
+            case Methods::BLUR_TEST: //тест блюра
+                tool.gaussianBlur(gray, 7, 1.5);
+                frame = gray;
+                break;
+            case Methods::KENNY_TEST: //тест метода Кенни на блюре
+                tool.gaussianBlur(gray, 7, 1.5);
+                tool.canny(gray, 30, 60); //обводит резкие линии(детектор границ Кенни)
+                frame = gray;
+                break;
+            case Methods::THRESHOLD_TEST: //тест порогового преобразования на блюре
+                tool.gaussianBlur(gray, 3, 0.0);
+                tool.threshold(gray);
+                frame = gray;
+                break;
+            case Methods::ADAPTIVE_THRESHOLD_TEST: //тест адаптивного порогового преобразования на блюре
+                tool.gaussianBlur(gray, 3, 0.0);
+                tool.adaptiveThreshold(gray);
+                bitwise_not(gray, gray);
+                frame = gray;
+                break;
+            default:break;
         }
+        prof.point("OpenCV");
+
+        packet.setImage(frame);
+        prof.point("Compress");
+
+        packet.send(&scli, &addr); //very fast operation ( < 1 ms)
+
+        prof.end();
+        //if (waitKey(15) >= 0) break;
+    }
+    try {
     } catch(cv::Exception e) {
         //cerr << e.what() << endl;
         cerr << "err: " << e.err << endl;

@@ -6,10 +6,11 @@
 #include <sstream>
 #include "network/properties/structures/SelectProperty.hpp"
 
-SelectProperty::SelectProperty(initializer_list<const string> list, int selected) : selected(selected) {
-    for(auto str = list.begin(); str != list.end(); str++) {
-        selections.push_back(*str);
-    }
+SelectProperty::SelectProperty(vector<string> *selections, int selected) : selections(selections), selected(selected) {
+}
+
+void SelectProperty::updateFrom(Property *prop) {
+    this->selected = ((SelectProperty *) prop)->selected;
 }
 
 int SelectProperty::getSelected() {
@@ -21,8 +22,8 @@ void SelectProperty::read(TCPSocketClient *client) {
 }
 
 void SelectProperty::write(TCPSocketClient *client) {
-    client->writeByte((int) selections.size());
-    for(auto const& value: selections) {
+    client->writeByte((int) selections->size());
+    for(auto const& value: *selections) {
         client->writeUTF(value);
     }
     client->writeByte(selected);
@@ -35,14 +36,14 @@ PropertyType SelectProperty::getType() {
 string SelectProperty::toString() {
     stringstream ss;
     ss << "selected=" << selected << ", ";
-    if(selections.empty()) {
+    if(selections == nullptr || selections->empty()) {
         ss << "[]";
     } else {
         ss << "[";
-        auto it = selections.begin();
+        auto it = selections->begin();
         ss << *it;
         it++;
-        for(; it != selections.end(); ++it) {
+        for(; it != selections->end(); ++it) {
             ss << ", " << *it;
         }
         ss << "]";

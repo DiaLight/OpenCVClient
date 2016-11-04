@@ -1,10 +1,11 @@
 # OpenCVClient
+Written in C++ application based on OpenCV library. Main purpose of application is sending handled by OpenCV images from raspberry to another machine.
 
 ## Requires
     opencv 3.1
     cmake >= 3.0
 
-## Installation
+## How to build
     pi@raspberrypi:~ $ git clone https://github.com/DiaLight/OpenCVClient.git
     pi@raspberrypi:~ $ cd OpenCVClient/
     pi@raspberrypi:~/OpenCVClient $ mkdir build && cd build
@@ -12,14 +13,13 @@
     pi@raspberrypi:~/OpenCVClient/build $ make
 
 ## Usage
-    pi@raspberrypi:~/OpenCVClient/build $ ./OpenCVClient 
-    Args required: <host:port>
+    pi@raspberrypi:~/OpenCVClient/build $ ./OpenCVClient <host:port>
     
 Client closes when receiving the interrupt signal SIGINT(Ctrl+C) or SIGTERM(stop signal from IDE).
 
 ## Setup your IDE
 
-There is two IDE's i am working in.
+There is two IDE's I am working in.
 
 CLion is very convenient development environment and have good design, but it compiles and runs code local machine only.
 

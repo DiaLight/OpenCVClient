@@ -9,15 +9,15 @@ ChangePropertyPacket::ChangePropertyPacket() : InPacket() {
 
 }
 
+ChangePropertyPacket::~ChangePropertyPacket() {
+    delete value;
+}
+
 void ChangePropertyPacket::read(TCPSocketClient *client) {
     key = client->readUTF();
     int type = client->readByte();
     value = PropertyFactory::newInstance((PropertyType) type);
     value->read(client);
-}
-
-ChangePropertyPacket::~ChangePropertyPacket() {
-    delete value;
 }
 
 PacketType ChangePropertyPacket::getType() {

@@ -48,7 +48,7 @@ public:
     
     void runAsync();
 
-    int getSelect(const string& name, initializer_list<const string> list, int def);
+    int getSelect(const string& name, vector<string> *list, int def);
 
 private:
 

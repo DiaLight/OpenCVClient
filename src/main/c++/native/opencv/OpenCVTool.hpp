@@ -45,9 +45,9 @@ public:
         GaussianBlur(mat, mat, Size(ksize, ksize), sigma, sigma);
     }
 
-    void canny(Mat mat, double def_thr1 = 0, double def_thr2 = 30.0) {
-        double threshold1 = propc->getDouble("Canny.thr1", def_thr1);
-        double threshold2 = propc->getDouble("Canny.thr2", def_thr2);
+    void canny(Mat mat, double def_thr1 = 20, double def_thr2 = 60) {
+        double threshold1 = propc->getDouble("Canny.threshold1", def_thr1);
+        double threshold2 = propc->getDouble("Canny.threshold2", def_thr2);
         Canny(mat, mat, threshold1, threshold2, 3);
     }
 
@@ -61,23 +61,33 @@ public:
 
     void houghLines(Mat gray, Mat frame) {
         vector<Vec4i> lines;
-        cv::HoughLinesP(gray, lines, 10, CV_PI / 180, 40, 100, 10);
+        double rho = propc->getDouble("HoughLinesP.rho", 10);
+        cv::HoughLinesP(gray, lines, rho, CV_PI / 180, 40, 100, 10);
+        RNG rng(12345);
         for (int i = 0; i < lines.size(); i++) {
+            Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
             Vec4i a = lines[i];
-            int x1 = a[0], y1 = a[1], x2 = a[2], y2 = a[3];
-            line(frame, Point2i(x1, y1), Point2i(x2, y2), Scalar(0, 255, 0));
+            line(frame, Point2i(a[0], a[1]), Point2i(a[2], a[3]), color, 3);
         }
     }
 
     void findContours(Mat gray, Mat frame) {
         vector<vector<Point>> contours;
         cv::findContours(gray, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-        cv::drawContours(frame, contours, 10, Scalar(0, 255, 0), CV_FILLED);
-//        for (int i = 0; i < contours.size(); i++) {
-//            vector<Point> contour = contours[i];
-//            
-//            line(frame, Point2i(x1, y1), Point2i(x2, y2), Scalar(0, 255, 0));
-//        }
+        for(int i = 0; i< contours.size(); i++) {
+            drawContours(frame, contours, i, Scalar(0, 255, 0));
+        }
+    }
+    void findContours2(Mat gray, Mat frame) {
+        vector<vector<Point>> contours;
+        vector<Vec4i> hierarchy;
+        RNG rng(12345);
+        cv::findContours(gray, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+        /// Draw contours
+        for(int i = 0; i< contours.size(); i++) {
+            Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
+            drawContours(frame, contours, i, color, 2, 8, hierarchy, 0, Point());
+        }
     }
 
 private:
