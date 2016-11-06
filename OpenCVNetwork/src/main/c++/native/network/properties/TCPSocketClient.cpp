@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <network/exceptions/RuntimeException.hpp>
 #include <network/exceptions/IOException.hpp>
+#include <iostream>
 #include "network/properties/TCPSocketClient.hpp"
 
 ConnectionGuard::ConnectionGuard(TCPSocketClient *client, ServerAddr *addr) : client(client), addr(addr) {
@@ -22,7 +23,7 @@ TCPSocketClient::TCPSocketClient() {
 }
 
 TCPSocketClient::~TCPSocketClient() {
-
+    close();
 }
 
 void TCPSocketClient::connectTCP(ServerAddr *addr) {

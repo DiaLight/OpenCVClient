@@ -30,6 +30,7 @@ PropertiesClient::PropertiesClient(ServerAddr *addr) : TCPPacketClient() {
 
 PropertiesClient::~PropertiesClient() {
     if(clientThread != NULL) {
+        close();
         clientThread->join();
         delete clientThread;
     }
@@ -70,6 +71,42 @@ int PropertiesClient::getSelect(const string &name, vector<string> *values, int 
 
 void PropertiesClient::runAsync() {
     clientThread = new thread(connectStatic, this);
+}
+
+void PropertiesClient::connect() {
+
+    Protocol protocol;
+
+    protocol.registerInPacket(0, GetAllPropertiesPacket::constructor);
+    protocol.registerInPacket(1, GetPropertyPacket::constructor);
+    protocol.registerInPacket(2, ChangePropertyPacket::constructor);
+    protocol.registerInPacket(3, ResetPropertyPacket::constructor);
+    protocol.registerInPacket(0xFF, PingPacket::constructor);
+
+    setProtocol(&protocol);
+
+    registerInPacketHandler(onInPacketReceivedStatic, this);
+    registerOutPacketHandler(onOutPacketSendStatic, this);
+
+    try {
+        while(alive) {
+            try {
+                ConnectionGuard guard(this, addr); //life cycle safe
+                while (alive && isConnected()) {
+                    processPacket();
+                }
+                //guard destructor close connection
+            } catch(IOException e) {
+                e.printError();
+            }
+            if(!alive) break;
+            cond.wait(2);
+        }
+    } catch (RuntimeException e) {
+        e.printError();
+        alive = false;
+    }
+    cout << "Exit PropertiesClient thread gracefully" << endl;
 }
 
 template <typename T>
@@ -130,41 +167,6 @@ void PropertiesClient::onInPacketReceived(InPacket *p) {
             cerr << "Unhandled packet id: " << p->getId() << endl;
             break;
     }
-}
-
-void PropertiesClient::connect() {
-
-    Protocol protocol;
-
-    protocol.registerInPacket(0, GetAllPropertiesPacket::constructor);
-    protocol.registerInPacket(1, GetPropertyPacket::constructor);
-    protocol.registerInPacket(2, ChangePropertyPacket::constructor);
-    protocol.registerInPacket(3, ResetPropertyPacket::constructor);
-    protocol.registerInPacket(0xFF, PingPacket::constructor);
-
-    setProtocol(&protocol);
-
-    registerInPacketHandler(onInPacketReceivedStatic, this);
-    registerOutPacketHandler(onOutPacketSendStatic, this);
-
-    try {
-        while(alive) {
-            try {
-                ConnectionGuard guard(this, addr); //life cycle safe
-                while (alive && isConnected()) {
-                    processPacket();
-                }
-                //guard destructor close connection
-            } catch(IOException e) {
-                e.printError();
-            }
-            sleep(3);
-        }
-    } catch (RuntimeException e) {
-        e.printError();
-        alive = false;
-    }
-    pthread_exit(NULL);
 }
 
 

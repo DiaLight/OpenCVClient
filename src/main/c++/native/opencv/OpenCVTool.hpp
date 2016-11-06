@@ -64,9 +64,8 @@ public:
         double rho = propc->getDouble("HoughLinesP.rho", 10);
         cv::HoughLinesP(gray, lines, rho, CV_PI / 180, 40, 100, 10);
         RNG rng(12345);
-        for (int i = 0; i < lines.size(); i++) {
+        for(auto const& a : lines) {
             Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
-            Vec4i a = lines[i];
             line(frame, Point2i(a[0], a[1]), Point2i(a[2], a[3]), color, 3);
         }
     }
@@ -81,9 +80,9 @@ public:
     void findContours2(Mat gray, Mat frame) {
         vector<vector<Point>> contours;
         vector<Vec4i> hierarchy;
-        RNG rng(12345);
         cv::findContours(gray, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
         /// Draw contours
+        RNG rng(12345);
         for(int i = 0; i< contours.size(); i++) {
             Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
             drawContours(frame, contours, i, color, 2, 8, hierarchy, 0, Point());

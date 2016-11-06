@@ -45,7 +45,7 @@ public:
 
     int getInt(const string& name, int defVal);
     double getDouble(const string& name, double defVal);
-    
+
     void runAsync();
 
     int getSelect(const string& name, vector<string> *list, int def);
