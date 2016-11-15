@@ -25,8 +25,8 @@ using namespace cv;
 class OpenCVTool {
     PropertiesClient *propc;
 public:
-    FaceDetect faceDetect;
-    OpenCVTool(PropertiesClient *propc) : faceDetect(propc) {
+    //FaceDetect faceDetect;
+    OpenCVTool(PropertiesClient *propc) {//: faceDetect(propc) {
         this->propc = propc;
     }
     

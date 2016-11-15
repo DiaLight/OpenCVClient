@@ -80,10 +80,10 @@ int main(int argc, char** argv) {
             cvtColor(frame, gray, COLOR_BGR2GRAY);
             switch(propc.getSelect("method", &MethodsVector, Methods::CONTOURS)) {
                 case Methods::RAW: break;
-                case Methods::FACE_DETECT:
-                    tool.gaussianBlur(gray, 7, 1.5);
-                    tool.faceDetect.detectMultiScale(gray, frame);
-                    break;
+//                case Methods::FACE_DETECT:
+//                    tool.gaussianBlur(gray, 7, 1.5);
+//                    tool.faceDetect.detectMultiScale(gray, frame);
+//                    break;
                 case Methods::LINES:
                     tool.gaussianBlur(gray, 7, 1.5);
                     tool.canny(gray, 30, 60);
