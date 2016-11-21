@@ -13,7 +13,7 @@ Written in C++ application based on OpenCV library. Main purpose of application 
     pi@raspberrypi:~/OpenCVClient/build $ make
 
 ## Usage
-    pi@raspberrypi:~/OpenCVClient/build $ ./OpenCVClient <host:port>
+    pi@raspberrypi:~/OpenCVClient/build $ ./OpenCVClient --help
     
 Client closes when receiving the interrupt signal SIGINT(Ctrl+C) or SIGTERM(stop signal from IDE).
 

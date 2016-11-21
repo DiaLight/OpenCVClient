@@ -12,15 +12,15 @@
 using namespace std;
 using namespace cv;
 
-class FaceDetect {
+class ObjectDetect {
 
     PropertiesClient *propc;
-    CascadeClassifier face_cascade;
+    CascadeClassifier classifier;
 public:
-    FaceDetect(PropertiesClient *propc);
-    FaceDetect(const FaceDetect&) = delete; //deleted copy constructor
-    FaceDetect& operator=(const FaceDetect &) = delete; //deleted copy assignment operato
-    virtual ~FaceDetect();
+    ObjectDetect(PropertiesClient *propc);
+    ObjectDetect(const ObjectDetect&) = delete; //deleted copy constructor
+    ObjectDetect& operator=(const ObjectDetect &) = delete; //deleted copy assignment operato
+    virtual ~ObjectDetect();
 
     void detectMultiScale(Mat gray, Mat frame);
 };

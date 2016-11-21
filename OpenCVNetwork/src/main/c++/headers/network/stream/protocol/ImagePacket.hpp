@@ -18,20 +18,17 @@
 #include <cstdlib>
 #include <ctime>
 #include "network/ServerAddr.hpp"
-#include "StreamClient.hpp"
+#include "network/stream/UDPSocketClient.hpp"
 
 class ImagePacket {
-    int bufSize;
-    char *buf;
-    std::vector<uchar> buff; //buffer for encoding
-    std::vector<int> param;
-    __uint64_t frameIndex;
+    uint64_t frameIndex;
 public:
-    ImagePacket();
+    ImagePacket(cv::InputArray frame);
     virtual ~ImagePacket();
-    
-    void setImage(cv::InputArray img);
-    void send(StreamClient *cli, ServerAddr *addr);
+
+    void send(UDPSocketClient *cli, ServerAddr *addr);
+
+
 private:
 
 };

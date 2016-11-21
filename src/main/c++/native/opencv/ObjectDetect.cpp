@@ -2,33 +2,33 @@
 // Created by dialight on 31.10.16.
 //
 
-#include "opencv/FaceDetect.hpp"
+#include "opencv/ObjectDetect.hpp"
 
-FaceDetect::FaceDetect(PropertiesClient *propc) {
+ObjectDetect::ObjectDetect(PropertiesClient *propc) {
     this->propc = propc;
     //haarcascade_frontalface_default.xml
     //lbpcascade_frontalcatface.xml
-    if (!face_cascade.load("/home/dialight/haarcascade_frontalface_default.xml")) {
+    if (!classifier.load("/home/dialight/haarcascade_frontalface_default.xml")) {
         cout << "Error on loading classifier" << endl;
         exit(1);
     }
 }
 
-FaceDetect::~FaceDetect() {
+ObjectDetect::~ObjectDetect() {
 
 }
 
-void FaceDetect::detectMultiScale(Mat gray, Mat frame) {
+void ObjectDetect::detectMultiScale(Mat gray, Mat frame) {
     //        GaussianBlur(gray, gray, Size(7, 7), 1.5, 1.5);
     //        Canny(gray, gray, 0, 30, 3);
     int flags = CV_HAAR_SCALE_IMAGE;
     vector<Rect> faces;
-    int min_face_size = propc->getInt("FaceDetect.min_size", 100);
-    int max_face_size = propc->getInt("FaceDetect.max_size", 200);
-    face_cascade.detectMultiScale(
+    int min_size = propc->getInt("ObjectDetect.min_size", 100);
+    int max_size = propc->getInt("ObjectDetect.max_size", 200);
+    classifier.detectMultiScale(
             gray, faces, 1.1, 2, flags,
-            Size(min_face_size, min_face_size),
-            Size(max_face_size, max_face_size)
+            Size(min_size, min_size),
+            Size(max_size, max_size)
     );
     for (int i = 0; i < faces.size(); i++) { //very fast operation ( < 1 ms)
         cv::rectangle(frame, faces[i], Scalar(0, 255, 0));

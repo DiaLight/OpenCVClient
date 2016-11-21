@@ -9,15 +9,8 @@
 
 using namespace std;
 
-ServerAddr::ServerAddr(int argc, char **argv) {
-    port = -1;
-
-    if (argc < 2) {
-        cerr << "Args required: <host:port>" << endl;
-        exit(1);
-    }
-
-    string addr = argv[1];
+ServerAddr::ServerAddr(string addr) {
+    port = (uint16_t) -1;
 
     size_t colonPos = addr.find(':');
 
@@ -35,7 +28,7 @@ ServerAddr::ServerAddr(int argc, char **argv) {
                 srvAddrLen = sizeof (srvAddr);
                 bzero((char *) &srvAddr, srvAddrLen);
                 srvAddr.sin_family = AF_INET;
-                bcopy(server->h_addr, (char *) &srvAddr.sin_addr.s_addr, server->h_length);
+                bcopy(server->h_addr, (char *) &srvAddr.sin_addr.s_addr, (size_t) server->h_length);
                 srvAddr.sin_port = htons(port);
             } else {
                 cerr << "ERROR, Port must be between 0 and 65536" << endl;

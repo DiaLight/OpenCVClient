@@ -23,12 +23,12 @@ using namespace std;
 class ServerAddr {
 public:
     string host;
-    int port;
+    uint16_t port;
     
     struct sockaddr_in srvAddr;
     socklen_t srvAddrLen;
     
-    ServerAddr(int argc, char **argv);
+    ServerAddr(string addr);
     virtual ~ServerAddr();
     ServerAddr(const ServerAddr&) = delete; //deleted copy constructor
     ServerAddr& operator=(const ServerAddr &) = delete; //deleted copy assignment operato

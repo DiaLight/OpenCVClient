@@ -11,15 +11,15 @@
  * Created on 13 октября 2016 г., 8:42
  */
 
-#include "AppState.hpp"
+#include <AppState.hpp>
 #include <opencv2/opencv.hpp>
 #include <csignal>
-#include <iomanip>
-#include "Profiler.hpp"
-#include "network/stream/StreamClient.hpp"
-#include "network/stream/ImagePacket.hpp"
-#include "opencv/OpenCVTool.hpp"
-#include <utils/MacroEnumString.hpp>
+#include <Profiler.hpp>
+#include <network/stream/UDPSocketClient.hpp>
+#include <network/stream/protocol/ImagePacket.hpp>
+#include <opencv/Loop.hpp>
+#include <network/stream/StreamClient.hpp>
+#include <utils/CmdParser.hpp>
 
 using namespace std;
 using namespace cv;
@@ -30,29 +30,47 @@ void signalHandler(int signum) {
     cout << "Terminated with signal " << signum << " " << strsignal(signum) << endl;
 }
 
-#define MethodsMacro(m) \
-    m(RAW, "Без оработки") \
-    m(FACE_DETECT, "Face detect") \
-    m(LINES, "Lines") \
-    m(CONTOURS, "Contours") \
-    m(BLUR_TEST, "Тест блюра") \
-    m(KENNY_TEST, "Тест метода кенни") \
-    m(THRESHOLD_TEST, "тест порогового преобразования") \
-    m(ADAPTIVE_THRESHOLD_TEST, "тест адаптивного порогового преобразования")
-ENUM_STRING(MethodsMacro, Methods, MethodsVector)
-
 int main(int argc, char** argv) {
-    try {
-        //get target address from command line inArgs
-        ServerAddr addr(argc, argv);
+    cli::Parser parser(argc, argv);
 
+    parser.set_optional<string>("i", "image", "", "Replace video stream with image.");
+    parser.set_optional<string>("r", "remote", "localhost:2016", "Video stream to remote server.");
+    parser.set_optional<string>("x", "xml", "", "Path to object detect xml.");
+    parser.set_optional<bool>("l", "local", false, "Create simple local gui.");
+
+    parser.run_and_exit_if_error();
+
+    auto imagePath = parser.get<string>("i");
+    auto remote = parser.get<string>("r");
+    auto xmlPath = parser.get<string>("x");
+    auto local = parser.get<bool>("l");
+
+    bool isVideo = imagePath.empty();
+    bool isXml = !xmlPath.empty();
+
+    //get target address from command line inArgs
+    ServerAddr addr(remote);
+
+    VideoCapture *cap = nullptr;
+    Mat image;
+    if (isVideo) {
         //init video source
-        VideoCapture cap(0); // default camera
-        if (!cap.isOpened()) {
+        cap = new VideoCapture(0); // default camera
+        if (!cap->isOpened()) {
             cout << "No video capture device" << endl;
             alive = false;
             return -1;
         }
+    } else {
+        image = imread(imagePath, 1);
+        if(image.empty()) {
+            printf("Cannot read image file: %s\n", imagePath.c_str());
+            alive = false;
+            return -1;
+        }
+    }
+
+    try {
 
         //init tcp properties client bound to target address
         PropertiesClient propc(&addr);
@@ -60,70 +78,65 @@ int main(int argc, char** argv) {
 
         //init udp stream client bound to target address
         StreamClient scli;
-        ImagePacket packet; //network structure
         scli.bind();
 
         //setup signal inHandler for caught interrupts
         signal(SIGINT, signalHandler);
         signal(SIGTERM, signalHandler);
 
-        OpenCVTool tool(&propc);
+        Tool tool(&propc);
+        ObjectDetect *detect = nullptr;
+        if(isXml) {
+            detect = new ObjectDetect(&propc);
+        }
+        if(local) {
+            namedWindow("image", 1);
+        }
+        Loop cvMain(&propc, &tool);
         Profiler prof(false);
         Mat frame;
-        Mat gray;
         while (alive) {
             prof.start();
 
-            cap >> frame;
+            if (isVideo) {
+                *cap >> frame;
+            } else {
+                frame = image.clone();
+            }
             prof.point("Capture");
 
-            cvtColor(frame, gray, COLOR_BGR2GRAY);
-            switch(propc.getSelect("method", &MethodsVector, Methods::CONTOURS)) {
-                case Methods::RAW: break;
-//                case Methods::FACE_DETECT:
-//                    tool.gaussianBlur(gray, 7, 1.5);
-//                    tool.faceDetect.detectMultiScale(gray, frame);
-//                    break;
-                case Methods::LINES:
-                    tool.gaussianBlur(gray, 7, 1.5);
-                    tool.canny(gray, 30, 60);
-                    tool.houghLines(gray, frame);
-                    break;
-                case Methods::CONTOURS:
-                    tool.gaussianBlur(gray, 7, 1.5);
-                    tool.canny(gray, 60, 80);
-                    tool.findContours2(gray, frame);
-                    break;
-                case Methods::BLUR_TEST: //тест блюра
-                    tool.gaussianBlur(gray, 7, 1.5);
-                    frame = gray;
-                    break;
-                case Methods::KENNY_TEST: //тест метода Кенни на блюре
-                    tool.gaussianBlur(gray, 7, 1.5);
-                    tool.canny(gray, 30, 60); //обводит резкие линии(детектор границ Кенни)
-                    frame = gray;
-                    break;
-                case Methods::THRESHOLD_TEST: //тест порогового преобразования на блюре
-                    tool.gaussianBlur(gray, 3, 0.0);
-                    tool.threshold(gray);
-                    frame = gray;
-                    break;
-                case Methods::ADAPTIVE_THRESHOLD_TEST: //тест адаптивного порогового преобразования на блюре
-                    tool.gaussianBlur(gray, 3, 0.0);
-                    tool.adaptiveThreshold(gray);
-                    bitwise_not(gray, gray);
-                    frame = gray;
-                    break;
-                default:break;
+            if(isXml) {
+                Mat gray;
+                cvtColor(frame, gray, COLOR_BGR2GRAY);
+                tool.gaussianBlur(gray, 7, 1.5);
+                detect->detectMultiScale(gray, frame);
+            } else {
+                frame = cvMain.loop(frame);
             }
             prof.point("OpenCV");
 
-            packet.setImage(frame);
+            ImagePacket packet(frame); //network structure
             prof.point("Compress");
 
-            packet.send(&scli, &addr); //very fast operation ( < 1 ms)
+            scli.sendPacket(&packet, &addr); //very fast operation ( < 1 ms)
+
+            if(local) {
+                imshow("image", frame);
+                waitKey(1);
+            }
+
+            int del = propc.getInt("loop.delayms", 300);
+            if(del > 0) {
+                usleep((__useconds_t) del * 1000);
+            }
 
             prof.end();
+        }
+        if (isVideo) {
+            delete cap;
+        }
+        if(isXml) {
+            delete detect;
         }
         alive = false;
         signal(SIGINT, SIG_DFL);

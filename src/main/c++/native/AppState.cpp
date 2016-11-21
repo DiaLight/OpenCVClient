@@ -25,6 +25,7 @@ void Condition::waitms(int ms) {
 }
 
 void Condition::notifyAll() {
+    unique_lock<mutex> lk(m);
     myApp = true;
     condv.notify_all();
 }

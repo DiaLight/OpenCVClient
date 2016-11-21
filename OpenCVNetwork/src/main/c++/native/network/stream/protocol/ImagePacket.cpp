@@ -11,29 +11,31 @@
  * Created on 24 октября 2016 г., 13:11
  */
 
-#include "network/stream/ImagePacket.hpp"
+#include "network/stream/protocol/ImagePacket.hpp"
 
 using namespace cv;
 using namespace std;
 
-ImagePacket::ImagePacket() : param(2) {
-    bufSize = 64 * 1024 - 20 - 8 - 1;
-    buf = new char[bufSize]();
-    param[0] = cv::IMWRITE_JPEG_QUALITY;
-    param[1] = 80; //default(95) 0-100
+int bufSize = 64 * 1024 - 20 - 8 - 1;
+char *buf = new char[bufSize]();
+std::vector<uchar> image;
+
+std::vector<int> param = {
+        cv::IMWRITE_JPEG_QUALITY,
+        80 //default(95) 0-100
+};
+
+ImagePacket::ImagePacket(InputArray frame) {
+    imencode(".jpg", frame, image, param);
+    frameIndex = (uint64_t) time(0);
 }
 
 ImagePacket::~ImagePacket() {
-    delete buf;
+//    delete buf;
 }
 
-void ImagePacket::setImage(InputArray img) {
-    imencode(".jpg", img, buff, param);
-    frameIndex = (__uint64_t) time(0);
-}
-
-void ImagePacket::send(StreamClient *cli, ServerAddr *addr) {
-    int size = (int) buff.size();
+void ImagePacket::send(UDPSocketClient *cli, ServerAddr *addr) {
+    int size = (int) image.size();
     int left = (size + 4 + 8) % (bufSize - 8 - 1);
     int parts = (size + 4) / (bufSize - 8 - 1);
     if (left != 0) parts++;
@@ -50,7 +52,7 @@ void ImagePacket::send(StreamClient *cli, ServerAddr *addr) {
         }
         int partSize = bufSize - bufPos;
         if (dataPos + partSize > size) partSize = size - dataPos;
-        memcpy((void*) (buf + bufPos), (void*) (((char *) buff.data()) + dataPos), (size_t) partSize);
+        memcpy((void*) (buf + bufPos), (void*) (((char *) image.data()) + dataPos), (size_t) partSize);
         dataPos += partSize;
         bufPos += partSize;
         cli->send(buf, (size_t) bufPos, addr);

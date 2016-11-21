@@ -1,47 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//
+// Created by dialight on 06.11.16.
+//
 
-/* 
- * File:   Client.h
- * Author: dialight
- *
- * Created on 13 октября 2016 г., 10:51
- */
+#ifndef OPENCVCLIENT_STREAMCLIENT_HPP
+#define OPENCVCLIENT_STREAMCLIENT_HPP
 
-#ifndef STREAMCLIENT_H
-#define STREAMCLIENT_H
 
-#include <string>
-#include <iostream>
-#include <cerrno>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include "network/ServerAddr.hpp"
+#include "UDPPacketClient.hpp"
 
-class StreamClient {
-    int cliFD;
-public:
-    StreamClient();
-    
-    StreamClient(const StreamClient&) = delete; //deleted copy constructor
-    StreamClient& operator=(const StreamClient &) = delete; //deleted copy assignment operato
-    
-    virtual ~StreamClient();
-    
-    void bind();
-    ssize_t recv(void *buf, size_t size, ServerAddr *addr);
-    void send(void *buf, size_t size, ServerAddr *addr);
+class StreamClient : public UDPPacketClient {
+
 };
 
-#endif /* CLIENT_H */
 
+#endif //OPENCVCLIENT_STREAMCLIENT_HPP
