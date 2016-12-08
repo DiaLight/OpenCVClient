@@ -4,7 +4,7 @@
 
 #include "network/exceptions/IOException.hpp"
 
-IOException::IOException(const string &exception, bool silent) : RuntimeException(exception, silent) {
+IOException::IOException(const std::string &exception, bool silent) : RuntimeException(exception, silent) {
 
 }
 

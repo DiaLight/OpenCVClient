@@ -7,15 +7,15 @@
 
 
 #include <network/properties/protocol/OutPacket.hpp>
-#include <network/properties/structures/Property.hpp>
+#include <structures/Property.hpp>
 
 class AddPropertyPacket : public OutPacket {
 
-    string key;
-    Property *value;
+    std::string key;
+    PropertyPointer value;
 public:
 
-    AddPropertyPacket(const string &key, Property *value);
+    AddPropertyPacket(const std::string &key, PropertyPointer value);
 
     void write(TCPSocketClient *client) override;
 
@@ -23,7 +23,7 @@ public:
 
     int getId() override;
 
-    string toString() override;
+    std::string toString() override;
 };
 
 

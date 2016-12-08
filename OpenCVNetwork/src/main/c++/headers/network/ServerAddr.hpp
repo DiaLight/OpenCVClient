@@ -18,22 +18,20 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-using namespace std;
-
 class ServerAddr {
 public:
-    string host;
+    std::string host;
     uint16_t port;
     
     struct sockaddr_in srvAddr;
     socklen_t srvAddrLen;
     
-    ServerAddr(string addr);
+    ServerAddr(std::string addr);
     virtual ~ServerAddr();
     ServerAddr(const ServerAddr&) = delete; //deleted copy constructor
     ServerAddr& operator=(const ServerAddr &) = delete; //deleted copy assignment operato
 
-    string toString();
+    std::string toString();
 
 };
 

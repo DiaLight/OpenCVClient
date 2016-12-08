@@ -17,14 +17,14 @@ public:
 
     int get();
 
-    void updateFrom(Property *prop) override;
+    void updateFrom(PropertyPointer prop) override;
 
-    void read(TCPSocketClient *client) override;
-
-    void write(TCPSocketClient *client) override;
     PropertyType getType() override;
 
-    string toString() override;
+    void deserialize(DataStream *ds) override;
+    void serialize(DataStream *ds) override;
+
+    std::string toString() override;
 
 };
 

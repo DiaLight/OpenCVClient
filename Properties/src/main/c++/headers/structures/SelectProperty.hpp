@@ -6,32 +6,29 @@
 #define OPENCVCLIENT_SELECTPROPERTY_HPP
 
 #include <string>
-#include <vector>
+#include <map>
 #include "Property.hpp"
-
-using namespace std;
 
 class SelectProperty : public Property {
 
-    vector<string> *selections;
+    std::map<int, std::string> *selections;
     int selected;
 public:
 
     SelectProperty() = default;
 
-    SelectProperty(vector<string> *selections, int selected);
+    SelectProperty(std::map<int, std::string> *selections, int selected);
 
     int getSelected();
 
-    void read(TCPSocketClient *client) override;
-
-    void write(TCPSocketClient *client) override;
+    void updateFrom(PropertyPointer prop) override;
 
     PropertyType getType() override;
 
-    string toString() override;
+    void deserialize(DataStream *ds) override;
+    void serialize(DataStream *ds) override;
 
-    void updateFrom(Property *prop) override;
+    std::string toString() override;
 };
 
 

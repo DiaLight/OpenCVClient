@@ -6,14 +6,15 @@
 #define OPENCVCLIENT_OPENCVMAIN_HPP
 
 
-#include "Tool.hpp"
+#include <platov_aleksey/TriangleDetect.hpp>
+#include "opencv/Tool.hpp"
 
 class Loop {
-    PropertiesClient *propc;
     Tool *tool;
     Mat gray;
+    TriangleDetect pa_triangle;
 public:
-    Loop(PropertiesClient *propc, Tool *tool);
+    Loop(Tool *tool);
 
     Mat loop(Mat frame);
 };

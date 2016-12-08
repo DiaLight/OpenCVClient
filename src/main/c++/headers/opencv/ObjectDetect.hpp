@@ -14,12 +14,11 @@ using namespace cv;
 
 class ObjectDetect {
 
-    PropertiesClient *propc;
     CascadeClassifier classifier;
 public:
-    ObjectDetect(PropertiesClient *propc);
+    ObjectDetect(const string &xmlPath);
     ObjectDetect(const ObjectDetect&) = delete; //deleted copy constructor
-    ObjectDetect& operator=(const ObjectDetect &) = delete; //deleted copy assignment operato
+    ObjectDetect& operator=(const ObjectDetect &) = delete; //deleted copy assignment operator
     virtual ~ObjectDetect();
 
     void detectMultiScale(Mat gray, Mat frame);

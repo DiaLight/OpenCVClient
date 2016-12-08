@@ -24,7 +24,7 @@ void TCPPacketClient::setProtocol(Protocol *protocol) {
 }
 
 void TCPPacketClient::sendPacket(OutPacket *packet) {
-    lock_guard<mutex> lock(this->writeLock);
+    std::lock_guard<std::mutex> lock(this->writeLock);
     outHandler(packet, outArgs);
     writeByte(packet->getId());
     packet->write(this);

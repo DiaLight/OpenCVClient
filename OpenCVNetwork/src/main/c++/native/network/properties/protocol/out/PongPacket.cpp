@@ -4,6 +4,8 @@
 
 #include "network/properties/protocol/out/PongPacket.hpp"
 
+using namespace std;
+
 PongPacket::PongPacket(__uint64_t time) : time(time), OutPacket() {
 
 }

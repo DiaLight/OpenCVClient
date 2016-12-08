@@ -10,6 +10,9 @@ file(GLOB_RECURSE PROJECT_NATIVE_FILES ${PROJECT_NATIVE_DIR}/*.cpp)
 include_directories(${PROJECT_HEADERS_DIR})
 add_library(${PROJECT_NAME} SHARED ${PROJECT_HEADERS_FILES} ${PROJECT_NATIVE_FILES})
 
+include_directories(${Properties_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} Properties)
+
 #share variables through project name
 set(${PROJECT_NAME}_INCLUDE_DIRS ${PROJECT_HEADERS_DIR}
         CACHE INTERNAL "${PROJECT_NAME}: Include Directories" FORCE)

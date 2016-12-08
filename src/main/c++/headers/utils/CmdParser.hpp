@@ -198,7 +198,7 @@ namespace cli {
         }
 
     public:
-        explicit Parser(int argc, const char** argv) :
+        explicit Parser(int argc, const char* const* argv) :
                 _appname(argv[0]) {
             for (int i = 1; i < argc; ++i) {
                 _arguments.push_back(std::string(argv[i]));

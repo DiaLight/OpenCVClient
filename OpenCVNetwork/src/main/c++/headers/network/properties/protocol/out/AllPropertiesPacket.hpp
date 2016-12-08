@@ -8,16 +8,14 @@
 
 #include <network/properties/protocol/OutPacket.hpp>
 #include <map>
-#include <network/properties/structures/Property.hpp>
-
-using namespace std;
+#include <structures/Property.hpp>
 
 class AllPropertiesPacket : public OutPacket {
 
-    map<string, PropertyPointer> *props;
+    std::map<std::string, PropertyPointer> *props;
 public:
 
-    AllPropertiesPacket(map<string, PropertyPointer> *props);
+    AllPropertiesPacket(std::map<std::string, PropertyPointer> *props);
 
     void write(TCPSocketClient *client) override;
 
@@ -25,7 +23,7 @@ public:
 
     int getId() override;
 
-    string toString() override;
+    std::string toString() override;
 };
 
 

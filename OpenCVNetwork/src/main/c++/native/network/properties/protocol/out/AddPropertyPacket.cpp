@@ -4,13 +4,15 @@
 
 #include "network/properties/protocol/out/AddPropertyPacket.hpp"
 
-AddPropertyPacket::AddPropertyPacket(const string &key, Property *value) : key(key), value(value) {
+using namespace std;
+
+AddPropertyPacket::AddPropertyPacket(const string &key, PropertyPointer value) : key(key), value(value) {
 }
 
 void AddPropertyPacket::write(TCPSocketClient *client) {
     client->writeUTF(key);
     client->writeByte(value->getType());
-    value->write(client);
+    value->serialize(client);
 }
 
 PacketType AddPropertyPacket::getType() {

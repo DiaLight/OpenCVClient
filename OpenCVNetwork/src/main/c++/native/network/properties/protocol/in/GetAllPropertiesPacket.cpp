@@ -4,6 +4,8 @@
 
 #include "network/properties/protocol/in/GetAllPropertiesPacket.hpp"
 
+using namespace std;
+
 GetAllPropertiesPacket::GetAllPropertiesPacket() : InPacket() {}
 
 void GetAllPropertiesPacket::read(TCPSocketClient *client) {

@@ -4,6 +4,8 @@
 
 #include "network/properties/protocol/out/AllPropertiesPacket.hpp"
 
+using namespace std;
+
 AllPropertiesPacket::AllPropertiesPacket(map<string, PropertyPointer> *props) : props(props) {
 
 }
@@ -13,7 +15,7 @@ void AllPropertiesPacket::write(TCPSocketClient *client) {
     for (auto it = props->begin(); it != props->end(); ++it) {
         client->writeUTF(it->first);
         client->writeByte(it->second->getType());
-        it->second->write(client);
+        it->second->serialize(client);
     }
 }
 

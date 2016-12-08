@@ -16,18 +16,34 @@
 
 #include <opencv2/opencv.hpp>
 #include <sstream>
-#include "network/properties/PropertiesClient.hpp"
-#include "opencv/ObjectDetect.hpp"
+#include <opencv/ObjectDetect.hpp>
+#include <Properties.hpp>
 
 using namespace std;
 using namespace cv;
 
+struct line_t {
+    Point2i p1;
+    Point2i p2;
+    line_t(const Point2i &p1, const Point2i &p2) : p1(p1), p2(p2) {}
+    line_t(const int &p1x, const int &p1y, const int &p2x, const int &p2y) : p1(p1x, p1y), p2(p2x, p2y) {}
+    line_t(const Vec4i &v) : line_t(v[0], v[1], v[2], v[3]) {}
+    line_t() {}
+
+    string toString() {
+        stringstream ss;
+        ss << p1.x << ", " << p1.y << " " << p2.x << ", " << p2.y;
+        return ss.str();
+    }
+};
+typedef struct line_t Line4i;
+
 class Tool {
-    PropertiesClient *propc;
     RNG rng;
+
+    vector<Vec4i> tmp;
 public:
-    Tool(PropertiesClient *propc) : rng(12345) {
-        this->propc = propc;
+    Tool(int i = 0) : rng(12345) {
     }
     
     Tool(const Tool&) = delete; //deleted copy constructor
@@ -37,18 +53,59 @@ public:
         
     }
 
+    // Deprecated
     void gaussianBlur(Mat mat, int def_ksize = 7, double def_sigma = 1.5) {
-        int ksize = propc->getInt("GaussianBlur.ksize", def_ksize);
+        int ksize = props.getInt("GaussianBlur.ksize", def_ksize);
         if(ksize % 2 == 0) ksize++; //OpenCV Assertion(ksize.width > 0 && ksize.width % 2 == 1 && ksize.height > 0 && ksize.height % 2 == 1)
         if(ksize < 0) ksize = 1;
-        double sigma = propc->getDouble("GaussianBlur.sigma", def_sigma);
+        double sigma = props.getDouble("GaussianBlur.sigma", def_sigma);
         GaussianBlur(mat, mat, Size(ksize, ksize), sigma, sigma);
     }
 
     void canny(Mat mat, double def_thr1 = 20, double def_thr2 = 60) {
-        double threshold1 = propc->getDouble("Canny.threshold1", def_thr1);
-        double threshold2 = propc->getDouble("Canny.threshold2", def_thr2);
-        Canny(mat, mat, threshold1, threshold2, 3);
+        double threshold1 = props.getDouble("Canny.threshold1", def_thr1);
+        double threshold2 = props.getDouble("Canny.threshold2", def_thr2);
+        int apertureSize = props.getInt("Canny.apertureSize", 3);
+        Canny(mat, mat, threshold1, threshold2, apertureSize);
+    }
+
+    map<int, string> HarrisBorderTypesMap = {
+            {BorderTypes::BORDER_CONSTANT, "Constant"},
+            {BorderTypes::BORDER_REPLICATE, "Replicate"},
+            {BorderTypes::BORDER_REFLECT, "Reflect"},
+            {BorderTypes::BORDER_WRAP, "Wrap"},
+            {BorderTypes::BORDER_REFLECT_101, "Reflect 101"},
+            {BorderTypes::BORDER_TRANSPARENT, "Transparent"},
+            {BorderTypes::BORDER_ISOLATED, "Isolated"}
+    };
+    void harris(Mat mat, int def_blockSize = 7, int def_ksize = 5) {
+        int blockSize = props.getInt("Harris.blockSize", def_blockSize);
+        int ksize = props.getInt("Harris.ksize", def_ksize);
+        double k = props.getDouble("Harris.k", 0.05);
+        int borderType = props.getSelect("Harris.borderType", &HarrisBorderTypesMap, BorderTypes::BORDER_DEFAULT);
+        int threshold = props.getInt("Harris.threshold", 200);
+//        cv::Sobel(mat, mat, CV_32FC1 , 1, 0, 3, BORDER_DEFAULT);
+//        cv::Sobel(mat, mat, CV_32FC1 , 0, 1, 3, BORDER_DEFAULT);
+
+        Mat dst = Mat::zeros(mat.size(), CV_32FC1);
+
+        /// Detecting corners
+        cv::cornerHarris(mat, dst, blockSize, ksize, k, borderType);
+
+        /// Normalizing
+        normalize(dst, dst, 0, 255, NORM_MINMAX, CV_32FC1, Mat());
+        Mat dst_norm_scaled;
+        convertScaleAbs(dst, dst_norm_scaled);
+
+        /// Drawing a circle around corners
+        for(int j = 0; j < dst.rows ; j++) {
+            for(int i = 0; i < dst.cols; i++) {
+                if((int) dst.at<float>(j,i) > threshold) {
+                    circle(mat, Point( i, j ), 5,  Scalar(0), 2, 8, 0);
+                }
+            }
+        }
+
     }
 
     void threshold(Mat mat) {
@@ -59,13 +116,28 @@ public:
         cv::adaptiveThreshold(mat, mat, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 75, 10);
     }
 
-    void houghLines(Mat gray, Mat frame) {
-        vector<Vec4i> lines;
-        double rho = propc->getDouble("HoughLinesP.rho", 10);
-        cv::HoughLinesP(gray, lines, rho, CV_PI / 180, 40, 100, 10);
-        for(auto const& a : lines) {
+    void houghLines(Mat gray, vector<Line4i> &lines) {
+//        double hough_rho = 1;
+        double rho = props.getDouble("HoughLinesP.rho", 10);
+//        double hough_theta = CV_PI / 180;
+        double theta = props.getDouble("HoughLinesP.theta", CV_PI / 180);
+//        int hough_treshold = 15;//70; // 15
+        int treshold = props.getInt("HoughLinesP.treshold", 15);
+//        double minLineLength = 65;//50; // 65
+        double minLineLength = props.getDouble("HoughLinesP.minLineLength", 65);
+//        double maxLineGap = 10;//20; // 10
+        double maxLineGap = props.getDouble("HoughLinesP.maxLineGap", 10);
+
+        cv::HoughLinesP(gray, tmp, rho, theta, treshold, minLineLength, maxLineGap);
+        lines.reserve(tmp.size());
+        for(auto const& t : tmp) lines.push_back(Line4i(t));
+        tmp.clear();
+    }
+
+    void showLines(Mat &frame, vector<Line4i> const &lines) {
+        for(auto const& l : lines) {
             Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
-            line(frame, Point2i(a[0], a[1]), Point2i(a[2], a[3]), color, 3);
+            cv::line(frame, l.p1, l.p2, color, 3, CV_AA);
         }
     }
 
@@ -77,8 +149,8 @@ public:
         }
     }
     void findContours2(Mat gray, Mat frame) {
-        int min_size = propc->getInt("Contour.min_size", 20);
-        int max_size = propc->getInt("Contour.max_size", 200);
+        int min_size = props.getInt("Contour.min_size", 20);
+        int max_size = props.getInt("Contour.max_size", 200);
         vector<vector<Point>> contours;
         vector<Vec4i> hierarchy;
         cv::findContours(gray, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));

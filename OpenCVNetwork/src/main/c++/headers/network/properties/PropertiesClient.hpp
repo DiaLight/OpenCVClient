@@ -17,24 +17,22 @@
 #include "AppState.hpp"
 #include <string>
 #include <map>
+#include <vector>
 #include <thread>
 #include <mutex>
 #include <network/properties/protocol/Protocol.hpp>
+#include <PropertiesListener.hpp>
 #include "TCPSocketClient.hpp"
 #include "TCPPacketClient.hpp"
-#include "network/properties/structures/SelectProperty.hpp"
 
-using namespace std;
-
-class PropertiesClient : TCPPacketClient {
+class PropertiesClient : TCPPacketClient, public ::PropertiesListener {
 
     ServerAddr *addr;
 
-    thread *clientThread;
-    map <string, PropertyPointer> props;
+    std::thread *clientThread;
 public:
     static bool DEBUG;
-    static vector<PacketType> IGNORE_PACKET;
+    static std::vector<PacketType> IGNORE_PACKET;
 
     PropertiesClient(ServerAddr *addr);
 
@@ -43,12 +41,9 @@ public:
     
     virtual ~PropertiesClient();
 
-    int getInt(const string& name, int defVal);
-    double getDouble(const string& name, double defVal);
+    void onNewProperty(std::string name, PropertyPointer property) override;
 
     void runAsync();
-
-    int getSelect(const string& name, vector<string> *list, int def);
 
 private:
 

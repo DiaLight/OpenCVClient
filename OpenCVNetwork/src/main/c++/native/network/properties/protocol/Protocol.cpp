@@ -7,6 +7,8 @@
 #include <sstream>
 #include <iostream>
 
+using namespace std;
+
 void Protocol::registerInPacket(int id, InPacketConstructor packetConstructor) {
     inPackets.insert(pair<int, InPacketConstructor>(id, packetConstructor));
 }
@@ -14,7 +16,7 @@ void Protocol::registerInPacket(int id, InPacketConstructor packetConstructor) {
 InPacket *Protocol::newInstance(int id) {
     auto it = inPackets.find(id);
     if (it == inPackets.end()) {
-        std::stringstream ss;
+        stringstream ss;
         ss << "Unknown packet id: " << id;
         throw IOException(ss.str());
     }

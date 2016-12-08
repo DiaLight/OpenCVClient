@@ -5,6 +5,7 @@
 #ifndef OPENCVCLIENT_TCPCLIENT_HPP
 #define OPENCVCLIENT_TCPCLIENT_HPP
 
+#include <DataStream.hpp>
 #include "network/ServerAddr.hpp"
 
 class TCPSocketClient;
@@ -18,7 +19,7 @@ public:
     virtual ~ConnectionGuard();
 };
 
-class TCPSocketClient {
+class TCPSocketClient : public ::DataStream {
     bool binded;
     bool connected;
     int cliDesc;
@@ -40,26 +41,26 @@ public:
     void close();
     bool isConnected();
 
-    string readUTF();
-    void writeUTF(const string& str);
+    std::string readUTF() override;
+    void writeUTF(const std::string& str) override;
 
-    int readShort();
-    void writeShort(int s);
+    int readShort() override;
+    void writeShort(int s) override;
 
-    int readInt();
-    void writeInt(int i);
+    int readInt() override;
+    void writeInt(int i) override;
 
-    double readDouble();
-    void writeDouble(double i);
+    double readDouble() override;
+    void writeDouble(double i) override;
 
-    __uint64_t readLong();
-    void writeLong(__uint64_t i);
+    __uint64_t readLong() override;
+    void writeLong(__uint64_t i) override;
 
-    int readByte();
-    void writeByte(int i);
+    int readByte() override;
+    void writeByte(int i) override;
 
-    bool readBool();
-    void writeBool(bool b);
+    bool readBool() override;
+    void writeBool(bool b) override;
 
 };
 

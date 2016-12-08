@@ -2,15 +2,15 @@
 // Created by dialight on 31.10.16.
 //
 
+#include <Properties.hpp>
 #include "opencv/ObjectDetect.hpp"
 
-ObjectDetect::ObjectDetect(PropertiesClient *propc) {
-    this->propc = propc;
+ObjectDetect::ObjectDetect(const string &xmlPath) {
     //haarcascade_frontalface_default.xml
     //lbpcascade_frontalcatface.xml
-    if (!classifier.load("/home/dialight/haarcascade_frontalface_default.xml")) {
-        cout << "Error on loading classifier" << endl;
-        exit(1);
+    if (!classifier.load(xmlPath)) {
+        cerr << "Error on loading classifier" << endl;
+        exit(-1);
     }
 }
 
@@ -23,8 +23,8 @@ void ObjectDetect::detectMultiScale(Mat gray, Mat frame) {
     //        Canny(gray, gray, 0, 30, 3);
     int flags = CV_HAAR_SCALE_IMAGE;
     vector<Rect> faces;
-    int min_size = propc->getInt("ObjectDetect.min_size", 100);
-    int max_size = propc->getInt("ObjectDetect.max_size", 200);
+    int min_size = props.getInt("ObjectDetect.min_size", 100);
+    int max_size = props.getInt("ObjectDetect.max_size", 200);
     classifier.detectMultiScale(
             gray, faces, 1.1, 2, flags,
             Size(min_size, min_size),
@@ -34,7 +34,7 @@ void ObjectDetect::detectMultiScale(Mat gray, Mat frame) {
         cv::rectangle(frame, faces[i], Scalar(0, 255, 0));
         stringstream ss;
         ss << faces[i].width << " " << faces[i].height;
-        cv::putText(frame, ss.str(), cvPoint(faces[i].x, faces[i].y - 5), FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(200, 200, 250), 1, CV_AA);
+        cv::putText(frame, ss.str(), cvPoint(faces[i].x, faces[i].y - 5), FONT_HERSHEY_COMPLEX_SMALL, 0.8, CV_RGB(200, 200, 250), 1, LINE_AA);
     }
     faces.clear();
 }

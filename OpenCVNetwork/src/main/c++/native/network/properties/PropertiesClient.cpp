@@ -2,10 +2,7 @@
 // Created by dialight on 31.10.16.
 //
 #include "network/properties/PropertiesClient.hpp"
-#include "network/properties/structures/IntProperty.hpp"
-#include <string.h>
-#include <iostream>
-#include <unistd.h>
+#include <Properties.hpp>
 #include <network/exceptions/IOException.hpp>
 #include <network/properties/protocol/in/ChangePropertyPacket.hpp>
 #include <network/properties/protocol/in/PingPacket.hpp>
@@ -16,16 +13,21 @@
 #include <network/properties/protocol/out/RemovePropertyPacket.hpp>
 #include <network/properties/protocol/out/PongPacket.hpp>
 #include <network/properties/protocol/out/AllPropertiesPacket.hpp>
-#include <network/properties/structures/DoubleProperty.hpp>
 
 using namespace std;
 
-bool PropertiesClient::DEBUG = true;
+bool PropertiesClient::DEBUG = false;
 vector<PacketType> PropertiesClient::IGNORE_PACKET = {PacketType::PING, PacketType::PONG};
 
 PropertiesClient::PropertiesClient(ServerAddr *addr) : TCPPacketClient() {
     this->addr = addr;
     this->clientThread = NULL;
+    props.registerListener(this);
+}
+
+void PropertiesClient::onNewProperty(std::string name, PropertyPointer property) {
+    AddPropertyPacket pa(name, property);
+    trySendPacket(&pa);
 }
 
 PropertiesClient::~PropertiesClient() {
@@ -34,40 +36,37 @@ PropertiesClient::~PropertiesClient() {
         clientThread->join();
         delete clientThread;
     }
-    for(auto iterator = props.begin(); iterator != props.end(); iterator++) {
-        delete iterator->second;
-    }
 }
 
-int PropertiesClient::getInt(const string& name, int defVal) {
-    auto it = props.find(name);
-    if (it != props.end()) return ((IntProperty *) it->second)->get();
-    PropertyPointer prop = new IntProperty(defVal);
-    props.insert(pair<string, PropertyPointer>(name, prop));
-    AddPropertyPacket pa(name, prop);
-    trySendPacket(&pa);
-    return defVal;
-}
-
-double PropertiesClient::getDouble(const string& name, double defVal) {
-    auto it = props.find(name);
-    if (it != props.end()) return ((DoubleProperty *) it->second)->get();
-    PropertyPointer prop = new DoubleProperty(defVal);
-    props.insert(pair<string, PropertyPointer>(name, prop));
-    AddPropertyPacket pa(name, prop);
-    trySendPacket(&pa);
-    return defVal;
-}
-
-int PropertiesClient::getSelect(const string &name, vector<string> *values, int defVal) {
-    auto it = props.find(name);
-    if (it != props.end()) return ((SelectProperty *) it->second)->getSelected();
-    PropertyPointer prop = new SelectProperty(values, defVal);
-    props.insert(pair<string, PropertyPointer>(name, prop));
-    AddPropertyPacket pa(name, prop);
-    trySendPacket(&pa);
-    return defVal;
-}
+//int PropertiesClient::getInt(const string& name, int defVal) {
+//    auto it = props.find(name);
+//    if (it != props.end()) return ((IntProperty *) it->second)->get();
+//    PropertyPointer prop = new IntProperty(defVal);
+//    props.insert(pair<string, PropertyPointer>(name, prop));
+//    AddPropertyPacket pa(name, prop);
+//    trySendPacket(&pa);
+//    return defVal;
+//}
+//
+//double PropertiesClient::getDouble(const string& name, double defVal) {
+//    auto it = props.find(name);
+//    if (it != props.end()) return ((DoubleProperty *) it->second)->get();
+//    PropertyPointer prop = new DoubleProperty(defVal);
+//    props.insert(pair<string, PropertyPointer>(name, prop));
+//    AddPropertyPacket pa(name, prop);
+//    trySendPacket(&pa);
+//    return defVal;
+//}
+//
+//int PropertiesClient::getSelect(const string &name, map<int, string> *values, int defVal) {
+//    auto it = props.find(name);
+//    if (it != props.end()) return ((SelectProperty *) it->second)->getSelected();
+//    PropertyPointer prop = new SelectProperty(values, defVal);
+//    props.insert(pair<string, PropertyPointer>(name, prop));
+//    AddPropertyPacket pa(name, prop);
+//    trySendPacket(&pa);
+//    return defVal;
+//}
 
 void PropertiesClient::runAsync() {
     clientThread = new thread(connectStatic, this);
@@ -128,14 +127,14 @@ void PropertiesClient::onInPacketReceived(InPacket *p) {
     }
     switch (p->getType()) {
         case GET_ALL_PROPERTIES: {
-            AllPropertiesPacket pa(&props);
+            AllPropertiesPacket pa(&props.all);
             sendPacket(&pa);
         }break;
         case GET_PROPERTY: {
             GetPropertyPacket *packet = (GetPropertyPacket *) p;
-            auto it = props.find(packet->key);
-            if (it != props.end()) {
-                AddPropertyPacket pa(packet->key, it->second);
+            PropertyPointer prop = props.getProperty(packet->key);
+            if (prop != nullptr) {
+                AddPropertyPacket pa(packet->key, prop);
                 sendPacket(&pa);
             } else {
                 RemovePropertyPacket pa(packet->key);
@@ -144,19 +143,19 @@ void PropertiesClient::onInPacketReceived(InPacket *p) {
         }break;
         case CHANGE_PROPERTY: {
             ChangePropertyPacket *packet = (ChangePropertyPacket *) p;
-            auto it = props.find(packet->key);
-            if (it != props.end()) {
+            auto it = props.all.find(packet->key);
+            if (it != props.all.end()) {
                 if(it->second->getType() != packet->value->getType()) {
                     throw new RuntimeException("Wrong type of property: " + packet->value->getType());
                 }
                 it->second->updateFrom(packet->value);
             } else {
-                props.insert(pair<string, PropertyPointer>(packet->key, packet->value));
+                props.all.insert(pair<string, PropertyPointer>(packet->key, packet->value));
             }
         }break;
         case RESET_PROPERTY: {
             ResetPropertyPacket *packet = (ResetPropertyPacket *) p;
-            props.erase(packet->key);
+            props.all.erase(packet->key);
         }break;
         case PING: {
             PingPacket *packet = (PingPacket *) p;

@@ -2,8 +2,10 @@
 // Created by dialight on 31.10.16.
 //
 
-#include <network/properties/structures/PropertyFactory.hpp>
+#include <structures/PropertyFactory.hpp>
 #include "network/properties/protocol/in/ChangePropertyPacket.hpp"
+
+using namespace std;
 
 ChangePropertyPacket::ChangePropertyPacket() : InPacket() {
 
@@ -17,7 +19,7 @@ void ChangePropertyPacket::read(TCPSocketClient *client) {
     key = client->readUTF();
     int type = client->readByte();
     value = PropertyFactory::newInstance((PropertyType) type);
-    value->read(client);
+    value->deserialize(client);
 }
 
 PacketType ChangePropertyPacket::getType() {

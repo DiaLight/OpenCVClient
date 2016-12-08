@@ -4,6 +4,8 @@
 
 #include "network/properties/protocol/in/PingPacket.hpp"
 
+using namespace std;
+
 PingPacket::PingPacket() : InPacket() {}
 
 void PingPacket::read(TCPSocketClient *client) {

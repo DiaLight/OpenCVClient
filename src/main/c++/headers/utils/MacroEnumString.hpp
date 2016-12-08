@@ -17,9 +17,9 @@ using namespace std;
 #define END_ENUM };
 
 #define BEGIN_MAP(HEAD) \
-    static vector<string> HEAD = {
+    static map<int, string> HEAD = {
 #define MAP_ITEM(ENUM, NAME) \
-    NAME,
+    {ENUM, NAME},
 #define END_MAP };
 
 #define ENUM_STRING(MACRO, ENUM, METHOD) \
@@ -45,5 +45,11 @@ using namespace std;
 //        "Face detect",
 //        "Lines",
 //};
+
+//void __() {
+//    map<int, string> MethodsMap = {
+//            {BorderTypes::BORDER_DEFAULT, "hello"}
+//    };
+//}
 
 #endif //OPENCVCLIENT_MACROENUMSTRING_HPP

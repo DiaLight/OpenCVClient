@@ -21,7 +21,7 @@ class TCPPacketClient : protected TCPSocketClient {
     OutPacketHandler outHandler;
     void *outArgs;
 
-    mutex writeLock;
+    std::mutex writeLock;
 
 protected:
     TCPPacketClient();

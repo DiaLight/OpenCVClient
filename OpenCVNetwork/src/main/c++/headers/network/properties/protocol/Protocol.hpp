@@ -10,10 +10,8 @@
 #include "InPacket.hpp"
 #include "OutPacket.hpp"
 
-using namespace std;
-
 class Protocol {
-    map<int, InPacketConstructor> inPackets;
+    std::map<int, InPacketConstructor> inPackets;
 
 public:
 

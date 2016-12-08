@@ -7,15 +7,13 @@
 
 #include <string>
 
-using namespace std;
-
 class RuntimeException {
     bool silent;
-    string exception;
+    std::string exception;
 protected:
 
 public:
-    RuntimeException(const string &exception, bool silent = false);
+    RuntimeException(const std::string &exception, bool silent = false);
 
     //RuntimeException(const RuntimeException&) = delete; //deleted copy constructor
     RuntimeException& operator=(const RuntimeException &) = delete; //deleted copy assignment operato

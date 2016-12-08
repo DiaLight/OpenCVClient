@@ -21,7 +21,7 @@ public:
 
     int getId() override;
 
-    string toString() override;
+    std::string toString() override;
 };
 
 #endif //OPENCVCLIENT_PONGPACKET_HPP

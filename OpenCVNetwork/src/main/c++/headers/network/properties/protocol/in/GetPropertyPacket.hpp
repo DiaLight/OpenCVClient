@@ -11,7 +11,7 @@
 class GetPropertyPacket : public InPacket {
 
 public:
-    string key;
+    std::string key;
 
     GetPropertyPacket();
 
@@ -25,7 +25,7 @@ public:
         return new GetPropertyPacket();
     }
 
-    string toString() override;
+    std::string toString() override;
 };
 
 

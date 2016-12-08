@@ -25,7 +25,7 @@ public:
         return new PingPacket();
     }
 
-    string toString() override;
+    std::string toString() override;
 };
 
 

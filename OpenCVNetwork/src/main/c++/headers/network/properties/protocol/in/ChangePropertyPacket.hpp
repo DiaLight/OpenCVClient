@@ -7,13 +7,13 @@
 
 
 #include <network/properties/protocol/InPacket.hpp>
-#include <network/properties/structures/Property.hpp>
+#include <structures/Property.hpp>
 
 class ChangePropertyPacket : public InPacket {
 
 public:
-    string key;
-    Property *value;
+    std::string key;
+    PropertyPointer value;
 
     ChangePropertyPacket();
 
@@ -29,7 +29,7 @@ public:
         return new ChangePropertyPacket();
     }
 
-    string toString() override;
+    std::string toString() override;
 };
 
 

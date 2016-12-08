@@ -9,6 +9,8 @@
 #include <iostream>
 #include "network/properties/TCPSocketClient.hpp"
 
+using namespace std;
+
 ConnectionGuard::ConnectionGuard(TCPSocketClient *client, ServerAddr *addr) : client(client), addr(addr) {
     client->connectTCP(addr);
 }

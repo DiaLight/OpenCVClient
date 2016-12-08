@@ -11,7 +11,7 @@
 class IOException : public RuntimeException {
 
 public:
-    IOException(const string &exception, bool silent = false);
+    IOException(const std::string &exception, bool silent = false);
 
     virtual ~IOException();
 

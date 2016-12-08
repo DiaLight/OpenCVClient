@@ -11,7 +11,7 @@
 class ResetPropertyPacket : public InPacket {
 
 public:
-    string key;
+    std::string key;
 
     ResetPropertyPacket();
 
@@ -25,7 +25,7 @@ public:
         return new ResetPropertyPacket();
     }
 
-    string toString() override;
+    std::string toString() override;
 };
 
 

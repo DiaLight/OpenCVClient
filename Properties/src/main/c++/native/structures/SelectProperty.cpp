@@ -4,9 +4,13 @@
 
 #include <iostream>
 #include <sstream>
-#include "network/properties/structures/SelectProperty.hpp"
+#include <map>
+#include <structures/SelectProperty.hpp>
 
-SelectProperty::SelectProperty(vector<string> *selections, int selected) : selections(selections), selected(selected) {
+using namespace std;
+
+SelectProperty::SelectProperty(map<int, string> *selections, int selected) : selections(selections), selected(selected) {
+
 }
 
 void SelectProperty::updateFrom(Property *prop) {
@@ -17,16 +21,17 @@ int SelectProperty::getSelected() {
     return selected;
 }
 
-void SelectProperty::read(TCPSocketClient *client) {
-    selected = client->readByte();
+void SelectProperty::deserialize(DataStream *ds) {
+    selected = ds->readByte();
 }
 
-void SelectProperty::write(TCPSocketClient *client) {
-    client->writeByte((int) selections->size());
-    for(auto const& value: *selections) {
-        client->writeUTF(value);
+void SelectProperty::serialize(DataStream *ds) {
+    ds->writeByte((int) selections->size());
+    for(auto it = selections->begin(); it != selections->end(); it++) {
+        ds->writeByte(it->first);
+        ds->writeUTF(it->second);
     }
-    client->writeByte(selected);
+    ds->writeByte(selected);
 }
 
 PropertyType SelectProperty::getType() {
@@ -41,10 +46,10 @@ string SelectProperty::toString() {
     } else {
         ss << "[";
         auto it = selections->begin();
-        ss << *it;
+        ss << "[" << it->first << ", " << it->second << "]";
         it++;
         for(; it != selections->end(); ++it) {
-            ss << ", " << *it;
+            ss << ", [" << it->first << ", " << it->second << "]";
         }
         ss << "]";
     }

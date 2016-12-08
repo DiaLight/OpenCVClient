@@ -25,7 +25,7 @@ public:
         return new GetAllPropertiesPacket();
     }
 
-    string toString() override;
+    std::string toString() override;
 };
 
 

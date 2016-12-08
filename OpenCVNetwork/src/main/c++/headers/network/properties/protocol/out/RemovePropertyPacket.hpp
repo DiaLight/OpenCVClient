@@ -10,10 +10,10 @@
 
 class RemovePropertyPacket : public OutPacket {
 
-    string key;
+    std::string key;
 public:
 
-    RemovePropertyPacket(const string &key);
+    RemovePropertyPacket(const std::string &key);
 
     void write(TCPSocketClient *client) override;
 
@@ -21,7 +21,7 @@ public:
 
     int getId() override;
 
-    string toString() override;
+    std::string toString() override;
 
 };
 

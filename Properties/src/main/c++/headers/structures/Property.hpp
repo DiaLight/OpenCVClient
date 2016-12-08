@@ -5,7 +5,7 @@
 #ifndef OPENCVCLIENT_PROPERTY_HPP
 #define OPENCVCLIENT_PROPERTY_HPP
 
-#include <network/properties/TCPSocketClient.hpp>
+#include <Serializable.hpp>
 
 class Property;
 
@@ -17,13 +17,10 @@ enum PropertyType {
 
 typedef Property *PropertyPointer;
 
-class Property {
+class Property : public ::Serializable {
 public:
-    virtual void updateFrom(Property *prop) = 0;
-    virtual void read(TCPSocketClient *client) = 0;
-    virtual void write(TCPSocketClient *client) = 0;
+    virtual void updateFrom(PropertyPointer prop) = 0;
     virtual PropertyType getType() = 0;
-    virtual string toString() = 0;
 };
 
 

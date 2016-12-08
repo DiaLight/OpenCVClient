@@ -4,6 +4,8 @@
 
 #include "network/properties/protocol/in/ResetPropertyPacket.hpp"
 
+using namespace std;
+
 ResetPropertyPacket::ResetPropertyPacket() : InPacket() {}
 
 void ResetPropertyPacket::read(TCPSocketClient *client) {

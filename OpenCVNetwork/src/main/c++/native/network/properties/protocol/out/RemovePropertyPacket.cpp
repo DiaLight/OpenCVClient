@@ -4,6 +4,8 @@
 
 #include "network/properties/protocol/out/RemovePropertyPacket.hpp"
 
+using namespace std;
+
 RemovePropertyPacket::RemovePropertyPacket(const string &key) : key(key) {
 
 }
