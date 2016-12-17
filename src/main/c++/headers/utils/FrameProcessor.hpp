@@ -23,7 +23,7 @@ class FrameProcessor {
     FRAME_PROCESSOR proc;
 
     ObjectDetect *detect;
-    Loop *cvMain;
+    Loop *loop;
 public:
     FrameProcessor();
 

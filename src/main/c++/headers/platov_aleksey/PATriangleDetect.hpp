@@ -2,8 +2,8 @@
 // Created by dialight on 29.11.16.
 //
 
-#ifndef OPENCVCLIENT_TRIANGLEDETECT_HPP
-#define OPENCVCLIENT_TRIANGLEDETECT_HPP
+#ifndef OPENCVCLIENT_PATRIANGLEDETECT_HPP
+#define OPENCVCLIENT_PATRIANGLEDETECT_HPP
 
 #include <highgui.h>
 #include <opencv2/opencv.hpp>
@@ -14,26 +14,24 @@
 using namespace cv;
 using namespace std;
 
-struct triangle_t {
+struct patriangle_t {
     Line4i lines[3];
     Point2i fst_pos;
     Point2i cur_pos;
     bool checked;
-    triangle_t(const Line4i &l1, const Line4i &l2, const Line4i &l3) : lines{l1, l2, l3} {}
+    patriangle_t(const Line4i &l1, const Line4i &l2, const Line4i &l3) : lines{l1, l2, l3} {}
 };
-typedef struct triangle_t Triangle;
+typedef struct patriangle_t PATriangle;
 
-class TriangleDetect {
+class PATriangleDetect {
     int area = 15; // 15
 
     vector<Vec4i> tmp;
 public:
 
-    void filterLines(const vector<Line4i> &lines, vector<Line4i> &filtered);
+    void findTriangles(const vector<Line4i> &lines, int width, vector<PATriangle> &triangles);
 
-    void findTriangles(const vector<Line4i> &lines, int width, vector<Triangle> &triangles);
-
-    void show(Mat &frame, vector<Triangle> &triangles) {
+    void show(Mat &frame, vector<PATriangle> &triangles) {
 
 //        CvFont *font = new CvFont;
 //        cvInitFont(font, CV_FONT_HERSHEY_SIMPLEX, 1.0, 1.0, 0, 1, 8);
@@ -61,7 +59,7 @@ public:
 
         // обводка треугольников в массиве, и проверка прохождения треугольника через линию
         for (i = 0; i < triangles.size(); i++) {
-            Triangle &tr = triangles[i];
+            PATriangle &tr = triangles[i];
             if (abs(frame.cols / 2 - tr.cur_pos.x) <= frame.cols / 25 && !tr.checked) {
                 stringstream ss;
                 ss << "NEW TRIANGLE #" << i << "    ITS POSITION " << tr.cur_pos.x << " " << tr.cur_pos.y;
@@ -126,12 +124,9 @@ public:
         //cvFilter2D(img, img, &kernel_matrix, cvPoint(-1,-1));
     }
 
-    void showTriangles(Mat &frame, vector<Triangle> const& triangles);
+    void showTriangles(Mat &frame, vector<PATriangle> const& triangles);
 
 private:
-    Line4i testTriangle(Line4i l1, Line4i l2);
-    bool pointsCompare(Point2i const& p1, Point2i const& p2);
-    bool linesCompare(Line4i const& l1, Line4i const& l2);
     Point2i posTriangle(Line4i *t);
     bool triangleCompare(Point2i p, Point2i q, int area);
 
@@ -145,4 +140,4 @@ private:
 };
 
 
-#endif //OPENCVCLIENT_TRIANGLEDETECT_HPP
+#endif //OPENCVCLIENT_PATRIANGLEDETECT_HPP

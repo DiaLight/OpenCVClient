@@ -15,7 +15,7 @@ FrameProcessor::~FrameProcessor() {
             delete detect;
             break;
         case MANUAL:
-            delete cvMain;
+            delete loop;
             break;
     }
 }
@@ -29,7 +29,7 @@ bool FrameProcessor::setClassifierBased(const string &xmlPath) {
 
 void FrameProcessor::setManualHandler() {
     if(proc != FRAME_PROCESSOR::NONE) return;
-    cvMain = new Loop(&tool);
+    loop = new Loop(&tool);
     proc = FRAME_PROCESSOR::MANUAL;
 }
 
@@ -43,7 +43,7 @@ Mat FrameProcessor::handle(Mat frame) {
             detect->detectMultiScale(gray, frame);
             break;
         case MANUAL:
-            return cvMain->loop(frame);
+            return loop->loop(frame);
     }
     return frame;
 }

@@ -16,19 +16,21 @@ using namespace std;
     ENUM,
 #define END_ENUM };
 
-#define BEGIN_MAP(HEAD) \
-    static map<int, string> HEAD = {
+#define BEGIN_MAP() \
+    static map<int, string> all = {
 #define MAP_ITEM(ENUM, NAME) \
     {ENUM, NAME},
 #define END_MAP };
 
-#define ENUM_STRING(MACRO, ENUM, METHOD) \
+#define ENUM_STRING(MACRO, ENUM) \
+    namespace ENUM { \
     BEGIN_ENUM(ENUM) \
         MACRO(ENUM_ITEM) \
     END_ENUM \
-    BEGIN_MAP(METHOD) \
+    BEGIN_MAP() \
         MACRO(MAP_ITEM) \
-    END_MAP
+    END_MAP \
+    }
 
 ////Example usage
 //#define MethodsMacro(m) \

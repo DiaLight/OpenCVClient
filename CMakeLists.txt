@@ -19,10 +19,13 @@ add_executable(${PROJECT_NAME} ${PROJECT_HEADERS_FILES} ${PROJECT_NATIVE_FILES})
 # build and link subprojects
 add_subdirectory(Properties)
 add_subdirectory(OpenCVNetwork)
+add_subdirectory(IntelEdison)
 include_directories(${Properties_INCLUDE_DIRS})
 include_directories(${OpenCVNetwork_INCLUDE_DIRS})
+include_directories(${IntelEdison_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} Properties)
 target_link_libraries(${PROJECT_NAME} OpenCVNetwork)
+target_link_libraries(${PROJECT_NAME} IntelEdison)
 
 # link dependencies
 find_package(OpenCV REQUIRED)

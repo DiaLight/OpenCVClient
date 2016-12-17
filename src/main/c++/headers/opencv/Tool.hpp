@@ -18,25 +18,10 @@
 #include <sstream>
 #include <opencv/ObjectDetect.hpp>
 #include <Properties.hpp>
+#include "Types.hpp"
 
 using namespace std;
 using namespace cv;
-
-struct line_t {
-    Point2i p1;
-    Point2i p2;
-    line_t(const Point2i &p1, const Point2i &p2) : p1(p1), p2(p2) {}
-    line_t(const int &p1x, const int &p1y, const int &p2x, const int &p2y) : p1(p1x, p1y), p2(p2x, p2y) {}
-    line_t(const Vec4i &v) : line_t(v[0], v[1], v[2], v[3]) {}
-    line_t() {}
-
-    string toString() {
-        stringstream ss;
-        ss << p1.x << ", " << p1.y << " " << p2.x << ", " << p2.y;
-        return ss.str();
-    }
-};
-typedef struct line_t Line4i;
 
 class Tool {
     RNG rng;
@@ -78,14 +63,12 @@ public:
             {BorderTypes::BORDER_TRANSPARENT, "Transparent"},
             {BorderTypes::BORDER_ISOLATED, "Isolated"}
     };
-    void harris(Mat mat, int def_blockSize = 7, int def_ksize = 5) {
+    void harris(Mat mat, vector<Point2i> &points, int max = 300, int def_blockSize = 7, int def_ksize = 5, double def_k = 0.05, BorderTypes def_borderType = BorderTypes::BORDER_DEFAULT, int def_threshold = 200) {
         int blockSize = props.getInt("Harris.blockSize", def_blockSize);
         int ksize = props.getInt("Harris.ksize", def_ksize);
-        double k = props.getDouble("Harris.k", 0.05);
-        int borderType = props.getSelect("Harris.borderType", &HarrisBorderTypesMap, BorderTypes::BORDER_DEFAULT);
-        int threshold = props.getInt("Harris.threshold", 200);
-//        cv::Sobel(mat, mat, CV_32FC1 , 1, 0, 3, BORDER_DEFAULT);
-//        cv::Sobel(mat, mat, CV_32FC1 , 0, 1, 3, BORDER_DEFAULT);
+        double k = props.getDouble("Harris.k", def_k);
+        int borderType = props.getSelect("Harris.borderType", &HarrisBorderTypesMap, def_borderType);
+        int threshold = props.getInt("Harris.threshold", def_threshold);
 
         Mat dst = Mat::zeros(mat.size(), CV_32FC1);
 
@@ -101,11 +84,19 @@ public:
         for(int j = 0; j < dst.rows ; j++) {
             for(int i = 0; i < dst.cols; i++) {
                 if((int) dst.at<float>(j,i) > threshold) {
-                    circle(mat, Point( i, j ), 5,  Scalar(0), 2, 8, 0);
+                    if(points.size() >= max) return;
+                    points.push_back(Point2i(i, j));
                 }
             }
         }
 
+    }
+
+    void showPoints(Mat &frame, vector<Point2i> const &points) {
+        for(auto const& p : points) {
+            Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
+            cv::circle(frame, p, 5,  color, 2, LineTypes::LINE_AA);
+        }
     }
 
     void threshold(Mat mat) {
@@ -137,7 +128,7 @@ public:
     void showLines(Mat &frame, vector<Line4i> const &lines) {
         for(auto const& l : lines) {
             Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
-            cv::line(frame, l.p1, l.p2, color, 3, CV_AA);
+            cv::line(frame, l.p1, l.p2, color, 3, LineTypes::LINE_AA);
         }
     }
 
@@ -198,7 +189,7 @@ public:
 
             stringstream ss;
             ss << "(" << i << ")" << approx.size();
-            cv::putText(frame, ss.str(), center + Point2i(-10, -5), FONT_HERSHEY_COMPLEX_SMALL, 0.8, color, 1, CV_AA);
+            cv::putText(frame, ss.str(), center + Point2i(-10, -5), FONT_HERSHEY_COMPLEX_SMALL, 0.8, color, 1, LineTypes::LINE_AA);
             i++;
         }
 //        for(int i = 0; i < contours.size(); i++) {

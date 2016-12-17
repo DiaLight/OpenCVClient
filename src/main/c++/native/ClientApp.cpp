@@ -131,6 +131,8 @@ int main(int argc, const char* const argv[]) {
         signal(SIGTERM, signalHandler);
 
         if(local) {
+            // TODO: build properties in local window
+//                createTrackbar( "Sigma", "Laplacian", &sigma, 15, 0 );
             namedWindow("image", 1);
         }
         Profiler prof(profiler);
@@ -150,8 +152,6 @@ int main(int argc, const char* const argv[]) {
             scli.sendPacket(&packet, &addr); //very fast operation ( < 1 ms)
 
             if(local) {
-                // TODO: build properties in local window
-//                createTrackbar( "Sigma", "Laplacian", &sigma, 15, 0 );
                 imshow("image", frame);
                 waitKey(1);
             }
