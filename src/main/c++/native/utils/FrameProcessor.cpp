@@ -3,6 +3,7 @@
 //
 
 #include <utils/FrameProcessor.hpp>
+#include <opencv/OpenCVWrap.hpp>
 
 FrameProcessor::FrameProcessor() : proc(NONE) {
 
@@ -29,21 +30,18 @@ bool FrameProcessor::setClassifierBased(const string &xmlPath) {
 
 void FrameProcessor::setManualHandler() {
     if(proc != FRAME_PROCESSOR::NONE) return;
-    loop = new Loop(&tool);
+    loop = new Loop();
     proc = FRAME_PROCESSOR::MANUAL;
 }
 
-Mat FrameProcessor::handle(Mat frame) {
-    Mat gray;
+void FrameProcessor::handle(Mat &frame) {
     switch (proc) {
         case NONE:break;
         case CLASSIFIER:
-            cvtColor(frame, gray, COLOR_BGR2GRAY);
-            tool.gaussianBlur(gray, 7, 1.5);
-            detect->detectMultiScale(gray, frame);
+            detect->detectMultiScale(frame);
             break;
         case MANUAL:
-            return loop->loop(frame);
+            loop->loop(frame);
+            break;
     }
-    return frame;
 }

@@ -9,7 +9,7 @@
 #include <opencv2/opencv.hpp>
 #include <sstream>
 #include <iostream>
-#include <opencv/Tool.hpp>
+#include <opencv/Types.hpp>
 
 using namespace cv;
 using namespace std;
@@ -24,10 +24,15 @@ struct patriangle_t {
 typedef struct patriangle_t PATriangle;
 
 class PATriangleDetect {
+
+    Mat gray;
+
     int area = 15; // 15
 
     vector<Vec4i> tmp;
 public:
+
+    Mat loop(Mat frame);
 
     void findTriangles(const vector<Line4i> &lines, int width, vector<PATriangle> &triangles);
 

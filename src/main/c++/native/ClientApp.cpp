@@ -19,6 +19,7 @@
 #include <network/stream/protocol/ImagePacket.hpp>
 #include <network/stream/StreamClient.hpp>
 #include <utils/CmdParser.hpp>
+#include <Properties.hpp>
 #include "utils/VideoSource.hpp"
 #include "utils/FrameProcessor.hpp"
 
@@ -143,7 +144,7 @@ int main(int argc, const char* const argv[]) {
             videoSrc.capture(frame);
             prof.point("Capture");
 
-            frame = frameProc.handle(frame);
+            frameProc.handle(frame);
             prof.point("OpenCV");
 
             ImagePacket packet(frame); //network structure
@@ -167,11 +168,11 @@ int main(int argc, const char* const argv[]) {
         signal(SIGINT, SIG_DFL);
         signal(SIGTERM, SIG_DFL);
     } catch(cv::Exception e) {
-        throw e;
-//        cerr << "err: " << e.err << endl;
-//        cerr << "file: " << e.file << endl;
-//        cerr << "func: " << e.func << endl;
-//        cerr << "msg: " << e.msg << endl;
+//        throw e;
+        cerr << "err: " << e.err << endl;
+        cerr << "file: " << e.file << endl;
+        cerr << "func: " << e.func << endl;
+        cerr << "msg: " << e.msg << endl;
     }
     cout << "Exit main thread gracefully" << endl;
     return 0;

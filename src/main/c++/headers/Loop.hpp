@@ -8,17 +8,23 @@
 
 #include <platov_aleksey/PATriangleDetect.hpp>
 #include <ilin_pavel/IPTriangleDetect.hpp>
-#include "opencv/Tool.hpp"
+#include <ilin_pavel/IPTriangleDetect2.hpp>
+#include <IntelEdison.hpp>
 
 class Loop {
-    Tool *tool;
     Mat gray;
     PATriangleDetect pa_triangle;
     IPTriangleDetect ip_triangle;
-public:
-    Loop(Tool *tool);
+    IPTriangleDetect2 ip_triangle2;
 
-    Mat loop(Mat frame);
+    Triangle12i last;
+    RNG rng;
+    Scalar color;
+    IntelEdison edison;
+public:
+
+    void loop(Mat &frame);
+
 };
 
 

@@ -7,7 +7,6 @@
 
 #include <string>
 #include <opencv/ObjectDetect.hpp>
-#include <opencv/Tool.hpp>
 #include <Loop.hpp>
 
 using namespace cv;
@@ -19,7 +18,6 @@ class FrameProcessor {
         MANUAL,
     };
 
-    Tool tool;
     FRAME_PROCESSOR proc;
 
     ObjectDetect *detect;
@@ -33,7 +31,7 @@ public:
 
     virtual ~FrameProcessor();
 
-    Mat handle(Mat mat);
+    void handle(Mat &mat);
 };
 
 

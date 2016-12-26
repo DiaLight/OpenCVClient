@@ -3,6 +3,7 @@
 //
 
 #include <Properties.hpp>
+#include <opencv/OpenCVWrap.hpp>
 #include "opencv/ObjectDetect.hpp"
 
 ObjectDetect::ObjectDetect(const string &xmlPath) {
@@ -18,7 +19,9 @@ ObjectDetect::~ObjectDetect() {
 
 }
 
-void ObjectDetect::detectMultiScale(Mat gray, Mat frame) {
+void ObjectDetect::detectMultiScale(Mat &frame) {
+    cvtColor(frame, gray, COLOR_BGR2GRAY);
+    CVWrap::gaussianBlur(gray, 7, 1.5);
     //        GaussianBlur(gray, gray, Size(7, 7), 1.5, 1.5);
     //        Canny(gray, gray, 0, 30, 3);
     int flags = CV_HAAR_SCALE_IMAGE;

@@ -14,6 +14,7 @@ using namespace cv;
 
 class ObjectDetect {
 
+    Mat gray;
     CascadeClassifier classifier;
 public:
     ObjectDetect(const string &xmlPath);
@@ -21,7 +22,7 @@ public:
     ObjectDetect& operator=(const ObjectDetect &) = delete; //deleted copy assignment operator
     virtual ~ObjectDetect();
 
-    void detectMultiScale(Mat gray, Mat frame);
+    void detectMultiScale(Mat &frame);
 };
 
 

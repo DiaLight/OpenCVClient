@@ -2,8 +2,66 @@
 // Created by dialight on 29.11.16.
 //
 
+#include <platov_aleksey/PATriangleDetect.hpp>
+#include <utils/MacroEnumString.hpp>
 #include <opencv/Utils.hpp>
-#include "platov_aleksey/PATriangleDetect.hpp"
+#include <opencv/OpenCVWrap.hpp>
+#include <opencv/DrawUtils.hpp>
+
+
+#define PATriMacro(m) \
+    m(SMOOTH, "Сглаживание") \
+    m(GRAY, "Серые тона") \
+    m(BORDER_DETECT, "Поиск границ") \
+    m(FIND_LINES, "Поиск линий") \
+    m(FILTER_LINES, "Фильтр линий") \
+    m(FIND_TRIANGLES, "Поиск треугольников") \
+    m(FINAL, "Итог")
+ENUM_STRING(PATriMacro, PATriStages)
+
+Mat PATriangleDetect::loop(Mat frame) {
+    int stage = props.getSelect("PATriangle.stage", &PATriStages::all, PATriStages::BORDER_DETECT);
+    // обработка изображения (сглаживание и др.)
+//            pa_triangle.filterImage(frame);
+    CVWrap::gaussianBlur(frame, 7, 1.5);
+    if(stage == PATriStages::SMOOTH) return frame;
+
+    cvtColor(frame, gray, COLOR_BGR2GRAY);
+    if(stage == PATriStages::GRAY) return gray;
+
+//            CVWrap::canny(gray, 20, 120);
+    CVWrap::canny(gray, 90, 100); //обводит резкие линии(детектор границ Кенни)
+//            CVWrap::harris(gray);
+    if(stage == PATriStages::BORDER_DETECT) return gray;
+
+    //Устанавливаем ROI(Область интересов)
+    //int x = 50, y = 30, width = 500, height = 410;
+    //cvSetImageROI(dst, cvRect(x,y,width,height));
+    //cvAddS(image, cvScalar(add), dst);
+    //получаем отрезки
+    vector<Line4i> lines;
+    CVWrap::houghLines(gray, lines);
+    if(stage == PATriStages::FIND_LINES) {
+        DrawUtils::showLines(gray, lines);
+        return gray;
+    }
+
+    vector<Line4i> filtered;
+    Utils::filterLines(lines, filtered);
+    if(stage == PATriStages::FILTER_LINES) {
+        DrawUtils::showLines(gray, filtered);
+        return gray;
+    }
+
+    vector<PATriangle> triangles;
+    findTriangles(filtered, frame.cols, triangles);
+    if(stage == PATriStages::FIND_TRIANGLES) {
+        showTriangles(gray, triangles);
+        return gray;
+    }
+
+    show(frame, triangles);
+}
 
 bool PATriangleDetect::triangleCompare(Point2i p, Point2i q, int area) {
     return abs(q.x - p.x) <= area &&
@@ -40,12 +98,12 @@ void PATriangleDetect::findTriangles(const vector<Line4i> &lines, int width, vec
             // выбор первых двух отрезков
             Line4i l1 = lines[i];
             Line4i l2 = lines[j];
-            Line4i pl3 = testTriangle(l1, l2, area);
+            Line4i pl3 = Utils::testTriangle(l1, l2, area);
 
             if(!pl3.isEmpty()) {
                 for (int k = j + 1; k < line_length; k++) {
                     Line4i l3 = lines[k];
-                    if(linesCompare(l3, pl3)) {
+                    if(Utils::linesCompare(l3, pl3)) {
                         bool bad = false;
                         PATriangle newTr(l1, l2, l3);
                         newTr.fst_pos = posTriangle(newTr.lines);
