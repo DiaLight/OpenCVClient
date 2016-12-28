@@ -49,11 +49,14 @@ bool VideoSource::setImageBased(const string& imagePath) {
 bool VideoSource::setRaspicamBased() {
     if(src != VIDEO_SOURCE::NONE) return false;
 #ifdef USE_RASPICAM
-    cout << "try to open raspicam camera..." << endl;
     cam = new raspicam::RaspiCam_Cv();
     cam->set( CV_CAP_PROP_FORMAT, CV_8UC1 );
     if ( !cam->open()) {
-        cerr << "Error opening camera" << endl;
+        cerr << "Error opening camera." << endl;
+        cerr << "Ensure you have camera module connected to raspberry board through 15-pin ribbon cable." << endl;
+        cerr << "Don't forget to enable camera interface with \"sudo raspi-config\" command." << endl;
+        cerr << "Setting up the camera hardware instructions:" << endl;
+        cerr << "https://www.raspberrypi.org/documentation/configuration/camera.md" << endl;
         return false;
     }
     src = VIDEO_SOURCE::RASPICAM;
