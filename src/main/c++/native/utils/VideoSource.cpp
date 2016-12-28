@@ -49,6 +49,7 @@ bool VideoSource::setImageBased(const string& imagePath) {
 bool VideoSource::setRaspicamBased() {
     if(src != VIDEO_SOURCE::NONE) return false;
 #ifdef USE_RASPICAM
+    cout << "try to open raspicam camera..." << endl;
     cam = new raspicam::RaspiCam_Cv();
     cam->set( CV_CAP_PROP_FORMAT, CV_8UC1 );
     if ( !cam->open()) {

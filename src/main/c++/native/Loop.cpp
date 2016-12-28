@@ -68,7 +68,7 @@ void Loop::loop(Mat &frame) {
             const Point2i &p2 = last.getCenter();
             Point2i v = p1 - p2;
             double distance = sqrt(v.x*v.x + v.y*v.y);
-            if(distance > 50) {
+            if(distance > 100) {
                 color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
                 edison.transmit();
             }else{
