@@ -24,9 +24,12 @@
 ENUM_STRING(MethodsMacro, Methods)
 
 void Loop::loop(Mat &frame) {
-    switch(props.getSelect("method", &Methods::all, Methods::RAW)) {
+    switch(props.getSelect("method", &Methods::all, Methods::IP_TRIANGLES2)) {
         case Methods::RAW: break;
         case Methods::MANUAL_TEST: { //тест адаптивного порогового преобразования на блюре
+            if(frame.type() == CV_16SC3) {
+
+            }
             cvtColor(frame, gray, COLOR_BGR2GRAY);
             CVWrap::gaussianBlur(gray);
             CVWrap::adaptiveThreshold(gray);

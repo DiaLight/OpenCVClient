@@ -44,11 +44,7 @@ void IntelEdison::transmit() {
     unsigned char *p_tx_buffer;
 
     p_tx_buffer = &tx_buffer[0];
-    *p_tx_buffer++ = 'h';
-    *p_tx_buffer++ = 'e';
-    *p_tx_buffer++ = 'l';
-    *p_tx_buffer++ = 'l';
-    *p_tx_buffer++ = 'o';
+    *p_tx_buffer++ = '1';
 
     ssize_t count = write(uart0_filestream, tx_buffer, (p_tx_buffer - tx_buffer));
     if (count < 0) {

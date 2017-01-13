@@ -50,7 +50,7 @@ bool VideoSource::setRaspicamBased() {
     if(src != VIDEO_SOURCE::NONE) return false;
 #ifdef USE_RASPICAM
     cam = new raspicam::RaspiCam_Cv();
-    cam->set( CV_CAP_PROP_FORMAT, CV_8UC1 );
+    //cam->set( CV_CAP_PROP_FORMAT, CV_8UC1 );
     if ( !cam->open()) {
         cerr << "Error opening camera." << endl;
         cerr << "Ensure you have camera module connected to raspberry board through 15-pin ribbon cable." << endl;

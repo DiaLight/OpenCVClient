@@ -4,6 +4,17 @@
  * and open the template in the editor.
  */
 
+/*
+ * TODO сделать
+ * изменять разрешение камеры
+ * запускать детект сразу +
+ * отправлять единичку +
+ * добавить дебаг для машинки(при флаге отсылать 1 на машинку) +
+ * пофиксить компиляцию(снова)
+ * переписать гуи
+ * написать скрипт для автосборки
+ */
+
 /* 
  * File:   Main.cpp
  * Author: dialight
@@ -84,6 +95,7 @@ int main(int argc, const char* const argv[]) {
     parser.set_optional<string>("r", "remote", "localhost:2016", "Video stream to remote server.");
     //Debug settings
     parser.set_optional<bool>("p", "profiler", false, "Enable profiler messages to console.");
+    parser.set_optional<int>("d", "debug", -1, "Edison connection debug. Sends '1' symbol to Edison every N seconds. Must be > 0.");
 
     parser.run_and_exit_if_error();
 
@@ -97,6 +109,16 @@ int main(int argc, const char* const argv[]) {
     auto local = parser.get<bool>("l");
     //Debug settings
     auto profiler = parser.get<bool>("p");
+    auto edisonDebug = parser.get<int>("d");
+
+    if(edisonDebug >= 0) {
+        IntelEdison e;
+        while(true) {
+            e.transmit();
+            cout << "1" << endl;
+            usleep((__useconds_t) edisonDebug * 1000 * 1000);
+        }
+    }
 
     //get target address from command line
     ServerAddr addr(remote);
