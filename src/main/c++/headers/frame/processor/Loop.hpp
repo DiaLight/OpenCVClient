@@ -10,8 +10,9 @@
 #include <ilin_pavel/IPTriangleDetect.hpp>
 #include <ilin_pavel/IPTriangleDetect2.hpp>
 #include <IntelEdison.hpp>
+#include "FrameProcessor.hpp"
 
-class Loop {
+class Loop : public FrameProcessor {
     Mat gray;
     PATriangleDetect pa_triangle;
     IPTriangleDetect ip_triangle;
@@ -23,7 +24,7 @@ class Loop {
     IntelEdison edison;
 public:
 
-    void loop(Mat &frame);
+    void handle(cv::Mat &frame) override;
 
 };
 

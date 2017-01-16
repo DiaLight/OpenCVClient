@@ -39,9 +39,9 @@ void UDPSocketClient::bind() {
         cerr << "ERROR on binding: " << strerror(errno) << endl;
         exit(1);
     }
-    cout << "client binded on "
-            << inet_ntoa(cliAddr.sin_addr) <<
-            ":" << ntohs(cliAddr.sin_port) << endl;
+//    cout << "client binded on "
+//            << inet_ntoa(cliAddr.sin_addr) <<
+//            ":" << ntohs(cliAddr.sin_port) << endl;
 }
 
 ssize_t UDPSocketClient::recv(void *buf, size_t size, ServerAddr *addr) {

@@ -2,16 +2,16 @@
 // Created by dialight on 17.12.16.
 //
 
-#ifndef OPENCVCLIENT_UTILS_HPP
-#define OPENCVCLIENT_UTILS_HPP
+#ifndef OPENCVCLIENT_CVUTILS_HPP
+#define OPENCVCLIENT_CVUTILS_HPP
 
 #include <Properties.hpp>
-#include "Types.hpp"
+#include "opencv/Types.hpp"
 #include <limits>
 
 #define DEFAULT_THRESHOlD 16
 
-namespace Utils {
+namespace CvUtils {
 
     bool pointsCompare(Point2i const& p1, Point2i const& p2, int threshold = DEFAULT_THRESHOlD);
     bool linesCompare(Line4i const& l1, Line4i const& l2, int threshold = DEFAULT_THRESHOlD);
@@ -35,4 +35,4 @@ namespace Utils {
 }
 
 
-#endif //OPENCVCLIENT_UTILS_HPP
+#endif //OPENCVCLIENT_CVUTILS_HPP

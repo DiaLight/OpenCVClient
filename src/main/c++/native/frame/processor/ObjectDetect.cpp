@@ -4,7 +4,10 @@
 
 #include <Properties.hpp>
 #include <opencv/OpenCVWrap.hpp>
-#include "opencv/ObjectDetect.hpp"
+#include "frame/processor/ObjectDetect.hpp"
+
+using namespace std;
+using namespace cv;
 
 ObjectDetect::ObjectDetect(const string &xmlPath) {
     //haarcascade_frontalface_default.xml
@@ -19,7 +22,7 @@ ObjectDetect::~ObjectDetect() {
 
 }
 
-void ObjectDetect::detectMultiScale(Mat &frame) {
+void ObjectDetect::handle(Mat &frame) {
     cvtColor(frame, gray, COLOR_BGR2GRAY);
     CVWrap::gaussianBlur(gray, 7, 1.5);
     //        GaussianBlur(gray, gray, Size(7, 7), 1.5, 1.5);

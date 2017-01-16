@@ -12,6 +12,7 @@
 class Properties;
 
 extern Properties props;
+extern bool showProperties;
 
 class Properties {
 

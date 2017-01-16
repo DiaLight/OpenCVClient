@@ -1,21 +1,4 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * TODO сделать
- * изменять разрешение камеры
- * запускать детект сразу +
- * отправлять единичку +
- * добавить дебаг для машинки(при флаге отсылать 1 на машинку) +
- * пофиксить компиляцию(снова)
- * переписать гуи
- * написать скрипт для автосборки
- */
-
-/* 
  * File:   Main.cpp
  * Author: dialight
  *
@@ -25,14 +8,23 @@
 #include <AppState.hpp>
 #include <opencv2/opencv.hpp>
 #include <csignal>
-#include <Profiler.hpp>
+#include <utils/Profiler.hpp>
 #include <network/stream/UDPSocketClient.hpp>
 #include <network/stream/protocol/ImagePacket.hpp>
 #include <network/stream/StreamClient.hpp>
-#include <utils/CmdParser.hpp>
 #include <Properties.hpp>
-#include "utils/VideoSource.hpp"
-#include "utils/FrameProcessor.hpp"
+#include <frame/source/FrameSource.hpp>
+#include <frame/source/WebCamSrc.hpp>
+#include <frame/source/ImageSrc.hpp>
+#include <frame/source/RaspiCamSrc.hpp>
+#include <utils/PropertiesLogger.hpp>
+#include <utils/DiaUtils.hpp>
+#include <utils/PointerGuard.hpp>
+#include <IntelEdison.hpp>
+#include <network/properties/PropertiesClient.hpp>
+#include <frame/processor/ObjectDetect.hpp>
+#include <frame/processor/Loop.hpp>
+#include "frame/processor/FrameProcessor.hpp"
 
 using namespace std;
 using namespace cv;
@@ -43,106 +35,101 @@ void signalHandler(int signum) {
     cout << "Terminated with signal " << signum << " " << strsignal(signum) << endl;
 }
 
-//static void help() {
-//    cout <<
-//         "\nThis program ...\n"
-//                 "It captures from the camera of your choice: 0, 1, ... default 0\n"
-//                 "Call:\n"
-//                 "./? ??\n" << endl;
-//}
-
+const String keys = ""
+        "{help h usage ? |               | print this message                                                                }"
+        "{res resolution | 640x480       | capture resolution                                                                }"
+        "{fps            | -1.0          | fixed fps for video capture                                                       }"
+        "{i image        |               | Replace video stream with image                                                   }"
+        "{c camera       |-1             | Set index of web camera inside OpenCV VideoCapture class. Must be > 0.            }"
+        "{x xml          |               | Path to xml of the object detect classifier                                       }"
+        "{flip           |false          | Flip image                                                                      }"
+        //View settings
+        "{l local        |false          | Create simple local gui                                                           }"
+        "{r remote       |localhost:2016 | Video stream to remote server                                                     }"
+        //Debug settings
+        "{p profiler     |false          | Enable profiler messages to console                                               }"
+        "{d debug        |-1             | Edison connection debug. Sends '1' symbol to Edison every N seconds. Must be > 0. }"
+;
 int main(int argc, const char* const argv[]) {
-    //TODO: Replace parser
-//    cv::CommandLineParser parser(argc, argv, "{help h | | }{ c | 0 | }{ p | | }");
-//    if (parser.has("help")) {
-//        help();
-//        return 0;
-//    }
-//    if(parser.get<string>("c").size() == 1 && isdigit(parser.get<string>("c")[0])) {
-//        cap.open(parser.get<int>("c"));
-//    } else {
-//        cap.open(parser.get<string>("c"));
-//    }
-//    if(cap.isOpened()) {
-//        cout << "Video " << parser.get<string>("c") <<
-//             ": width=" << cap.get(CAP_PROP_FRAME_WIDTH) <<
-//             ", height=" << cap.get(CAP_PROP_FRAME_HEIGHT) <<
-//             ", nframes=" << cap.get(CAP_PROP_FRAME_COUNT) << endl;
-//    }
-//    if(parser.has("p")) {
-//        int pos = parser.get<int>("p");
-//        if (!parser.check()) {
-//            parser.printErrors();
-//            return -1;
-//        }
-//        cout << "seeking to frame #" << pos << endl;
-//        cap.set(CAP_PROP_POS_FRAMES, pos);
-//    }
-//    if(!cap.isOpened()) {
-//        cout << "Could not initialize capturing..." << endl;
-//        return -1;
-//    }
+    CommandLineParser parser(argc, argv, keys);
+    parser.about("OpenCVClient");
 
-    cli::Parser parser(argc, argv);
+    if (parser.has("help")) {
+        parser.printMessage();
+        return 0;
+    }
 
     //Capture settings
-    parser.set_optional<string>("i", "image", "", "Replace video stream with image.");
-    parser.set_optional<int>("c", "camera", -1, "Set index of web camera inside OpenCV VideoCapture class. Must be > 0.");
+    auto resolution = parser.get<String>("resolution");
+    auto fps = parser.get<int>("fps");
+    auto imagePath = parser.get<String>("image");
+    auto deviceIndex = parser.get<int>("camera");
     //Frame process settings
-    parser.set_optional<string>("x", "xml", "", "Path to object detect xml.");
+    auto xmlPath = parser.get<String>("xml");
     //View settings
-    parser.set_optional<bool>("l", "local", false, "Create simple local gui.");
-    parser.set_optional<string>("r", "remote", "localhost:2016", "Video stream to remote server.");
+    auto local = parser.get<bool>("local");
+    auto remote = parser.get<String>("remote");
     //Debug settings
-    parser.set_optional<bool>("p", "profiler", false, "Enable profiler messages to console.");
-    parser.set_optional<int>("d", "debug", -1, "Edison connection debug. Sends '1' symbol to Edison every N seconds. Must be > 0.");
+    auto profiler = parser.get<bool>("profiler");
+    auto edisonDebug = parser.get<int>("debug");
+    
+    auto flip = parser.get<bool>("flip");
+    
 
-    parser.run_and_exit_if_error();
+    if (!parser.check()) {
+        parser.printErrors();
+        return 0;
+    }
 
-    //Capture settings
-    auto imagePath = parser.get<string>("i");
-    auto deviceIndex = parser.get<int>("c");
-    //Frame process settings
-    auto xmlPath = parser.get<string>("x");
-    //View settings
-    auto remote = parser.get<string>("r");
-    auto local = parser.get<bool>("l");
-    //Debug settings
-    auto profiler = parser.get<bool>("p");
-    auto edisonDebug = parser.get<int>("d");
+//    if(showProperties) {
+//        props.registerListener(&propertiesLogger);
+//    }
 
     if(edisonDebug >= 0) {
         IntelEdison e;
-        while(true) {
+        while(alive) {
             e.transmit();
             cout << "1" << endl;
             usleep((__useconds_t) edisonDebug * 1000 * 1000);
         }
+        return 0;
     }
 
     //get target address from command line
     ServerAddr addr(remote);
 
     try {
-        // TODO: rewrite to inherit model
-        VideoSource videoSrc; // destructor will release video source
+        PointerGuard<FrameSource> frameSrc;
         if (deviceIndex >= 0) {
-            if(!videoSrc.setOpenCVBased(deviceIndex)) return -1;
+            frameSrc.set(new WebCamSrc(deviceIndex));
         } else if(!imagePath.empty()) {
-            if(!videoSrc.setImageBased(imagePath)) return -1;
+            frameSrc.set(new ImageSrc(imagePath));
         } else {
-            if(!videoSrc.setRaspicamBased()) return -1;
+            frameSrc.set(new RaspiCamSrc());
+        }
+        if(!frameSrc->init()) {
+            return -1;
+        }
+
+        if(!resolution.empty()) {
+            cout << "Set resolution to " << resolution << endl;
+            vector<string> spl = strSplit(resolution, 'x');
+            frameSrc->setResolution(stoi(spl[0]), stoi(spl[1]));
+        }
+        if(fps > 0) {
+            cout << "Set fps to " << fps << endl;
+            frameSrc->setFps(fps);
         }
 
         //init tcp properties client bound to target address
         PropertiesClient propc(&addr);
         propc.runAsync();
 
-        FrameProcessor frameProc;
+        PointerGuard<FrameProcessor> frameProc;
         if(!xmlPath.empty()) {
-            if(!frameProc.setClassifierBased(xmlPath)) return -1;
+            frameProc.set(new ObjectDetect(xmlPath));
         } else {
-            frameProc.setManualHandler();
+            frameProc.set(new Loop());
         }
 
         //init udp stream client bound to target address
@@ -163,10 +150,11 @@ int main(int argc, const char* const argv[]) {
         while (alive) {
             prof.start();
 
-            videoSrc.capture(frame);
+            frameSrc->capture(frame);
             prof.point("Capture");
+            if(flip) cv::flip(frame, frame, -1);
 
-            frameProc.handle(frame);
+            frameProc->handle(frame);
             prof.point("OpenCV");
 
             ImagePacket packet(frame); //network structure

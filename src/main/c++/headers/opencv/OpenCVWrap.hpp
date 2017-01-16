@@ -8,7 +8,6 @@
 #include <opencv2/opencv.hpp>
 #include <sstream>
 #include "network/properties/PropertiesClient.hpp"
-#include "opencv/ObjectDetect.hpp"
 #include "Types.hpp"
 #include <Properties.hpp>
 

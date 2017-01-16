@@ -4,9 +4,9 @@
 
 #include <ilin_pavel/IPTriangleDetect.hpp>
 #include <utils/MacroEnumString.hpp>
-#include <opencv/Utils.hpp>
+#include <utils/CvUtils.hpp>
 #include <opencv/OpenCVWrap.hpp>
-#include <opencv/DrawUtils.hpp>
+#include <utils/DrawUtils.hpp>
 
 #define IPTriMacro(m) \
     m(SMOOTH, "Сглаживание") \
@@ -47,7 +47,7 @@ Mat IPTriangleDetect::loop(Mat &frame) {
     }
 
     vector<Point2i> fcorners;
-    Utils::filterPoints(corners, fcorners);
+    CvUtils::filterPoints(corners, fcorners);
     if(stage == IPTriStages::FILTER_CORNERS) {
         DrawUtils::showPoints(frame, fcorners);
         stringstream ss;
@@ -80,7 +80,7 @@ Mat IPTriangleDetect::loop(Mat &frame) {
     }
 
     vector<Line4i> flines;
-    Utils::filterLines(lines, flines);
+    CvUtils::filterLines(lines, flines);
     if(stage == IPTriStages::FILTER_LINES) {
         DrawUtils::showLines(frame, flines);
         stringstream ss;
@@ -108,7 +108,7 @@ Mat IPTriangleDetect::loop(Mat &frame) {
     }
 
     vector<Line4i> fborders;
-    Utils::filterLines(borders, fborders);
+    CvUtils::filterLines(borders, fborders);
     if(stage == IPTriStages::FILTER_BORDERS) {
         DrawUtils::showLines(frame, fborders);
         stringstream ss;
@@ -189,11 +189,11 @@ void IPTriangleDetect::findTriangles(const vector<Line4i> &borders, vector<Trian
         for (int j = i + 1; j < borders_amount; j++) {
             Line4i l1 = borders[i];
             Line4i l2 = borders[j];
-            Line4i pl3 = Utils::testTriangle(l1, l2);
+            Line4i pl3 = CvUtils::testTriangle(l1, l2);
             if(!pl3.isEmpty()) {
                 for (int k = j + 1; k < borders_amount; k++) {
                     Line4i l3 = borders[k];
-                    if(Utils::linesCompare(l3, pl3)) {
+                    if(CvUtils::linesCompare(l3, pl3)) {
                         Triangle12i tr(l1, l2, l3);
                         triangles.push_back(tr);
                     }

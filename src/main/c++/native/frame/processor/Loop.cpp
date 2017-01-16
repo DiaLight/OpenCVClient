@@ -2,11 +2,11 @@
 // Created by dialight on 06.11.16.
 //
 
-#include <Loop.hpp>
+#include <frame/processor/Loop.hpp>
 #include <utils/MacroEnumString.hpp>
-#include <opencv/Utils.hpp>
+#include <utils/CvUtils.hpp>
 #include <opencv/OpenCVWrap.hpp>
-#include <opencv/DrawUtils.hpp>
+#include <utils/DrawUtils.hpp>
 
 #define MethodsMacro(m) \
     m(RAW, "Без оработки") \
@@ -23,7 +23,7 @@
     m(ADAPTIVE_THRESHOLD_TEST, "Тест адаптивного порогового преобразования")
 ENUM_STRING(MethodsMacro, Methods)
 
-void Loop::loop(Mat &frame) {
+void Loop::handle(cv::Mat &frame) {
     switch(props.getSelect("method", &Methods::all, Methods::IP_TRIANGLES2)) {
         case Methods::RAW: break;
         case Methods::MANUAL_TEST: { //тест адаптивного порогового преобразования на блюре
@@ -101,13 +101,13 @@ void Loop::loop(Mat &frame) {
             CVWrap::findContours(gray, contours, hierarchy);
 
             vector<vector<Point>> filtered;
-            Utils::filterContoursBySize(contours, filtered, 20, 600);
+            CvUtils::filterContoursBySize(contours, filtered, 20, 600);
 
             vector<vector<Point>> aprox;
             CVWrap::approxPolyDP(filtered, aprox);
 
             vector<vector<Line4i>> lineContours;
-            Utils::contoursToLines(aprox, lineContours);
+            CvUtils::contoursToLines(aprox, lineContours);
 
             DrawUtils::showLineContours(frame, lineContours);
             break;
@@ -150,3 +150,4 @@ void Loop::loop(Mat &frame) {
         default:break;
     }
 }
+

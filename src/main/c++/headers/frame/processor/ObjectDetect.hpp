@@ -2,28 +2,27 @@
 // Created by dialight on 31.10.16.
 //
 
-#ifndef OPENCVCLIENT_FACEDETECT_HPP
-#define OPENCVCLIENT_FACEDETECT_HPP
+#ifndef OPENCVCLIENT_OBJECTDETECT_HPP
+#define OPENCVCLIENT_OBJECTDETECT_HPP
 
 #include <opencv2/opencv.hpp>
 #include <sstream>
 #include <network/properties/PropertiesClient.hpp>
+#include <frame/processor/FrameProcessor.hpp>
 
-using namespace std;
-using namespace cv;
+class ObjectDetect : public FrameProcessor {
 
-class ObjectDetect {
-
-    Mat gray;
-    CascadeClassifier classifier;
+    cv::Mat gray;
+    cv::CascadeClassifier classifier;
 public:
-    ObjectDetect(const string &xmlPath);
+    ObjectDetect(const std::string &xmlPath);
     ObjectDetect(const ObjectDetect&) = delete; //deleted copy constructor
     ObjectDetect& operator=(const ObjectDetect &) = delete; //deleted copy assignment operator
     virtual ~ObjectDetect();
 
-    void detectMultiScale(Mat &frame);
+    void handle(cv::Mat &frame) override;
+
 };
 
 
-#endif //OPENCVCLIENT_FACEDETECT_HPP
+#endif //OPENCVCLIENT_OBJECTDETECT_HPP

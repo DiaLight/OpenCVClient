@@ -4,9 +4,9 @@
 
 #include <ilin_pavel/IPTriangleDetect2.hpp>
 #include <utils/MacroEnumString.hpp>
-#include <opencv/Utils.hpp>
+#include <utils/CvUtils.hpp>
 #include <opencv/OpenCVWrap.hpp>
-#include <opencv/DrawUtils.hpp>
+#include <utils/DrawUtils.hpp>
 
 #define IPTri2Macro(m) \
     m(SMOOTH, "Сглаживание") \
@@ -54,7 +54,7 @@ void IPTriangleDetect2::find(Mat &frame, vector<Triangle12i> &result) {
     }
 
     vector<vector<Point>> filteredContours;
-    Utils::filterContoursBySize(contours, filteredContours);
+    CvUtils::filterContoursBySize(contours, filteredContours);
     if(stage == IPTri2Stages::FILTER_CONTOURS) {
         DrawUtils::showPointContours(frame, filteredContours);
         stringstream ss;

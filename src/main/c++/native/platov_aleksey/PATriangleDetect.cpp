@@ -4,9 +4,9 @@
 
 #include <platov_aleksey/PATriangleDetect.hpp>
 #include <utils/MacroEnumString.hpp>
-#include <opencv/Utils.hpp>
+#include <utils/CvUtils.hpp>
 #include <opencv/OpenCVWrap.hpp>
-#include <opencv/DrawUtils.hpp>
+#include <utils/DrawUtils.hpp>
 
 
 #define PATriMacro(m) \
@@ -47,7 +47,7 @@ Mat PATriangleDetect::loop(Mat frame) {
     }
 
     vector<Line4i> filtered;
-    Utils::filterLines(lines, filtered);
+    CvUtils::filterLines(lines, filtered);
     if(stage == PATriStages::FILTER_LINES) {
         DrawUtils::showLines(gray, filtered);
         return gray;
@@ -98,12 +98,12 @@ void PATriangleDetect::findTriangles(const vector<Line4i> &lines, int width, vec
             // выбор первых двух отрезков
             Line4i l1 = lines[i];
             Line4i l2 = lines[j];
-            Line4i pl3 = Utils::testTriangle(l1, l2, area);
+            Line4i pl3 = CvUtils::testTriangle(l1, l2, area);
 
             if(!pl3.isEmpty()) {
                 for (int k = j + 1; k < line_length; k++) {
                     Line4i l3 = lines[k];
-                    if(Utils::linesCompare(l3, pl3)) {
+                    if(CvUtils::linesCompare(l3, pl3)) {
                         bool bad = false;
                         PATriangle newTr(l1, l2, l3);
                         newTr.fst_pos = posTriangle(newTr.lines);

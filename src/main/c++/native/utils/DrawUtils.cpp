@@ -2,7 +2,7 @@
 // Created by dialight on 06.12.16.
 //
 
-#include "opencv/DrawUtils.hpp"
+#include "utils/DrawUtils.hpp"
 
 RNG rng(12345);
 

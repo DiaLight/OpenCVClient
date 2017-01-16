@@ -5,7 +5,7 @@
 #ifndef OPENCVCLIENT_DRAWUTILS_HPP
 #define OPENCVCLIENT_DRAWUTILS_HPP
 
-#include "Types.hpp"
+#include "opencv/Types.hpp"
 
 namespace DrawUtils {
 
