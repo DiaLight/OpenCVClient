@@ -20,3 +20,13 @@ vector<string> strSplit(const string &s, char delim) {
     split(s, delim, elems);
     return elems;
 }
+
+PairStr strCut(const string &s, char delim) {
+    vector<string> elems;
+    size_t colonPos = s.find(delim);
+
+    if (colonPos != string::npos) {
+        return PairStr(s.substr(0, colonPos), s.substr(colonPos + 1));
+    }
+    return PairStr(s, "");
+}

@@ -1,7 +1,19 @@
+
+OPTION(FORCE_DISABLE_CLANG "Set to ON if you don't want nextgen compilation" OFF)
+OPTION(FORCE_RASPICAM "Set to ON if you are developer in CLion" OFF)
+
+find_program(CLANG_PATH "clang")
+find_program(CLANG_CXX_PATH "clang++")
+IF(CLANG_PATH AND CLANG_CXX_PATH AND NOT FORCE_DISABLE_CLANG)
+    message(STATUS "Clang comppiler found")
+#    message(STATUS "CLANG_PATH = " ${CLANG_PATH})
+#    message(STATUS "CLANG_CXX_PATH = " ${CLANG_CXX_PATH})
+    set(CMAKE_C_COMPILER CLANG_PATH)
+    set(CMAKE_CXX_COMPILER CLANG_CXX_PATH)
+endif()
+
 cmake_minimum_required(VERSION 3.0)
 project(OpenCVClient)
-
-OPTION(FORCE_RASPICAM "Set to ON if you are developer in CLion" OFF)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")

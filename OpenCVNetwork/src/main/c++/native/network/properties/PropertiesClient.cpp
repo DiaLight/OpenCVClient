@@ -146,7 +146,7 @@ void PropertiesClient::onInPacketReceived(InPacket *p) {
             auto it = props.all.find(packet->key);
             if (it != props.all.end()) {
                 if(it->second->getType() != packet->value->getType()) {
-                    throw new RuntimeException("Wrong type of property: " + packet->value->getType());
+                    throw new RuntimeException("Wrong type of property: " + to_string(packet->value->getType()));
                 }
                 it->second->updateFrom(packet->value);
             } else {

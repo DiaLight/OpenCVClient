@@ -35,7 +35,7 @@ public:
 
     void sendPacket(OutPacket *packet);
 
-    bool trySendPacket(OutPacket *packet);
+    void trySendPacket(OutPacket *packet);
 
     void processPacket();
 

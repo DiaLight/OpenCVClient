@@ -10,6 +10,8 @@
 class FrameProcessor {
 
 public:
+    virtual ~FrameProcessor() {}
+
     virtual void handle(cv::Mat &frame) = 0;
 
 };

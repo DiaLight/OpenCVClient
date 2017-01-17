@@ -19,7 +19,7 @@
     m(FINAL, "Итог")
 ENUM_STRING(PATriMacro, PATriStages)
 
-Mat PATriangleDetect::loop(Mat frame) {
+Mat PATriangleDetect::loop(Mat &frame) {
     int stage = props.getSelect("PATriangle.stage", &PATriStages::all, PATriStages::BORDER_DETECT);
     // обработка изображения (сглаживание и др.)
 //            pa_triangle.filterImage(frame);
@@ -61,6 +61,7 @@ Mat PATriangleDetect::loop(Mat frame) {
     }
 
     show(frame, triangles);
+    return frame;
 }
 
 bool PATriangleDetect::triangleCompare(Point2i p, Point2i q, int area) {

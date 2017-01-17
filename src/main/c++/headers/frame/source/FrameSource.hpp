@@ -10,6 +10,7 @@
 class FrameSource {
 
 public:
+    virtual ~FrameSource() {}
     virtual void capture(cv::Mat &mat) = 0;
     virtual bool init() = 0;
     virtual void setResolution(int width, int height) = 0;

@@ -31,7 +31,7 @@ void TCPPacketClient::sendPacket(OutPacket *packet) {
     //lock_guard<mutex> destructor unlock writeLock
 }
 
-bool TCPPacketClient::trySendPacket(OutPacket *packet) {
+void TCPPacketClient::trySendPacket(OutPacket *packet) {
     if (isConnected()) {
         try {
             sendPacket(packet); //thread safe

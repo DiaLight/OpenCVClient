@@ -42,7 +42,7 @@ void Loop::handle(cv::Mat &frame) {
             break;
         }
         case Methods::PA_TRIANGLES:
-            pa_triangle.loop(frame);
+            frame = pa_triangle.loop(frame);
             break;
         case Methods::IP_TRIANGLES:
             ip_triangle.loop(frame);

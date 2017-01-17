@@ -32,7 +32,7 @@ class PATriangleDetect {
     vector<Vec4i> tmp;
 public:
 
-    Mat loop(Mat frame);
+    Mat loop(Mat &frame);
 
     void findTriangles(const vector<Line4i> &lines, int width, vector<PATriangle> &triangles);
 

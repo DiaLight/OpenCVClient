@@ -19,6 +19,7 @@ typedef Property *PropertyPointer;
 
 class Property : public ::Serializable {
 public:
+    virtual ~Property() {}
     virtual void updateFrom(PropertyPointer prop) = 0;
     virtual PropertyType getType() = 0;
 };

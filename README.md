@@ -2,10 +2,11 @@
 Written in C++ application based on OpenCV library. Main purpose of application is sending handled by OpenCV images from raspberry to another machine.
 
 ## Requires
-   * build-essentials (sudo apt-get install build-essentials)
-   * opencv 3.1
-   * cmake >= 3.0
+   * build-essentials `sudo apt-get install build-essentials`
+   * [opencv 3.1](https://github.com/opencv/opencv/releases)
+   * cmake >= 3.0 `sudo apt-get install cmake`
    * (optonal) [raspicam module](https://github.com/cedricve/raspicam)
+   * (optonal) clang `sudo apt-get install clang` - if you want fast compilation. (to disable `-DFORCE_DISABLE_CLANG=ON`)
 
 ## How to build
     pi@raspberrypi:~ $ git clone https://github.com/DiaLight/OpenCVClient.git
