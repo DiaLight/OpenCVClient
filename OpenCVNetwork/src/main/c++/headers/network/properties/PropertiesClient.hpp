@@ -14,7 +14,7 @@
 #ifndef PROPERTIESCLIENT_HPP
 #define PROPERTIESCLIENT_HPP
 
-#include "AppState.hpp"
+#include <App.hpp>
 #include <string>
 #include <map>
 #include <vector>

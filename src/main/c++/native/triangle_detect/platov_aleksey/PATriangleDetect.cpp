@@ -2,7 +2,8 @@
 // Created by dialight on 29.11.16.
 //
 
-#include <platov_aleksey/PATriangleDetect.hpp>
+#include <triangle_detect/platov_aleksey/PATriangleDetect.hpp>
+
 #include <utils/MacroEnumString.hpp>
 #include <utils/CvUtils.hpp>
 #include <opencv/OpenCVWrap.hpp>
@@ -22,7 +23,7 @@ ENUM_STRING(PATriMacro, PATriStages)
 Mat PATriangleDetect::loop(Mat &frame) {
     int stage = props.getSelect("PATriangle.stage", &PATriStages::all, PATriStages::BORDER_DETECT);
     // обработка изображения (сглаживание и др.)
-//            pa_triangle.filterImage(frame);
+//            patd.filterImage(frame);
     CVWrap::gaussianBlur(frame, 7, 1.5);
     if(stage == PATriStages::SMOOTH) return frame;
 

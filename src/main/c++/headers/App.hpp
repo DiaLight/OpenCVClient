@@ -16,20 +16,33 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <vector>
 
-class Condition;
-extern std::atomic<bool> alive;
-extern Condition cond;
+class App;
+extern App app;
 
-class Condition {
-    std::atomic<bool> myApp;
+class App {
+    std::atomic<bool> alive;
+    std::atomic<bool> notified;
     std::mutex m;
     std::condition_variable condv;
+    std::vector<std::function<void()>> onCloseListeners;
 public:
-    Condition();
+    App();
+
+    virtual ~App();
+
     void wait(int seconds);
     void waitms(int milliseconds);
     void notifyAll();
+
+    void close();
+
+    bool isAlive();
+
+    void init();
+
+    void onClose(std::function<void()> lambda);
 };
 
 #endif /* APPSTATE_H */

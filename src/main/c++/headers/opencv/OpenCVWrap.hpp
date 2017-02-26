@@ -20,7 +20,7 @@ namespace CVWrap {
 
     void gaussianBlur(Mat &mat, int def_ksize = 7, double def_sigma = 1.5);
 
-    void harris(Mat &mat, vector<Point2i> &points, int max = 300, int def_blockSize = 7, int def_ksize = 5, double def_k = 0.05, BorderTypes def_borderType = BorderTypes::BORDER_DEFAULT, int def_threshold = 200);
+    void harris(Mat &mat, vector<Point2i> &points, int max = 300, int def_blockSize = 7, int def_ksize = 5, double def_k = 0.05, BorderTypes def_borderType = BorderTypes::BORDER_DEFAULT, int def_threshold = 128);
 
     void threshold(Mat &mat);
 
@@ -33,6 +33,9 @@ namespace CVWrap {
     void findContours(Mat &gray, vector<vector<Point>> &contours, vector<Vec4i> &hierarchy);
 
     void approxPolyDP(vector<vector<Point>> const &in, vector<vector<Point>> &out);
+
+    void otsu(Mat &gray);
+
 };
 
 

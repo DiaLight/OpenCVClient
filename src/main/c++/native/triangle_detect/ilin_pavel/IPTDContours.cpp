@@ -2,7 +2,7 @@
 // Created by dialight on 17.12.16.
 //
 
-#include <ilin_pavel/IPTriangleDetect2.hpp>
+#include <triangle_detect/ilin_pavel/IPTDContours.hpp>
 #include <utils/MacroEnumString.hpp>
 #include <utils/CvUtils.hpp>
 #include <opencv/OpenCVWrap.hpp>
@@ -23,7 +23,7 @@ ENUM_STRING(IPTri2Macro, IPTri2Stages)
 //3.1415926535897932384626433832795 / 2
 #define HALF_PI 1.5707963267948966192313216916398
 
-void IPTriangleDetect2::find(Mat &frame, vector<Triangle12i> &result) {
+void IPTDContours::find(Mat &frame, vector<Triangle12i> &result) {
 
     int stage = props.getSelect("IPTriangle2.stage", &IPTri2Stages::all, IPTri2Stages::FINAL);
 
@@ -129,5 +129,39 @@ void IPTriangleDetect2::find(Mat &frame, vector<Triangle12i> &result) {
         }
     }
 
+}
+
+void IPTDContours::loop(Mat &frame) {
+    vector<Triangle12i> triangles;
+    find(frame, triangles);
+    Triangle12i *big = nullptr;
+    int bigArea = 0;
+    for(auto &t : triangles) {
+        int curArea = t.getAABB().area();
+        if(big == nullptr || curArea > bigArea) {
+            bigArea = curArea;
+            big = &t;
+        }
+    }
+    if(big == nullptr) return;
+    if(last.isEmpty()) {
+        color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
+        last = *big;
+        edison.transmit();
+        return;
+    }
+
+    const Point2i &p1 = big->getCenter();
+    const Point2i &p2 = last.getCenter();
+    Point2i v = p1 - p2;
+    double distance = sqrt(v.x*v.x + v.y*v.y);
+    if(distance > 100) {
+        color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
+        edison.transmit();
+    }else{
+        cv::line(frame, p1, p2, color, 2, LineTypes::LINE_AA);
+    }
+    DrawUtils::showTriangle(frame, *big, color);
+    last = *big;
 }
 

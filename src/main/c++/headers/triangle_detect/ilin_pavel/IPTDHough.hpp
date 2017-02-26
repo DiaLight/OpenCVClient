@@ -7,12 +7,12 @@
 
 #include <opencv/Types.hpp>
 
-class IPTriangleDetect {
+class IPTDHough {
 
     Mat gray;
 public:
 
-    Mat loop(Mat &mat);
+    void loop(Mat &mat);
 
     void findBorders(const vector<Point2i> &corners, const vector<Line4i> &lines, vector<Line4i> &borders);
     void findTriangles(const vector<Line4i> &borders, vector<Triangle12i> &triangles);

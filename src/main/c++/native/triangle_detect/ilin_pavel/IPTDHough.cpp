@@ -2,7 +2,7 @@
 // Created by dialight on 17.12.16.
 //
 
-#include <ilin_pavel/IPTriangleDetect.hpp>
+#include <triangle_detect/ilin_pavel/IPTDHough.hpp>
 #include <utils/MacroEnumString.hpp>
 #include <utils/CvUtils.hpp>
 #include <opencv/OpenCVWrap.hpp>
@@ -26,15 +26,17 @@ ENUM_STRING(IPTriMacro, IPTriStages)
 //3.1415926535897932384626433832795 / 2
 #define HALF_PI 1.5707963267948966192313216916398
 
-Mat IPTriangleDetect::loop(Mat &frame) {
+void IPTDHough::loop(Mat &frame) {
 
-    int stage = props.getSelect("IPTriangle.stage", &IPTriStages::all, IPTriStages::FIND_BORDERS);
+    int stage = props.getSelect("::IPTD.Hough.stage", &IPTriStages::all, IPTriStages::FILTER_BORDERS);
 
     CVWrap::gaussianBlur(frame, 7, 1.5);
-    if(stage == IPTriStages::SMOOTH) return frame;
+    if(stage == IPTriStages::SMOOTH) return;
 
     cvtColor(frame, gray, COLOR_BGR2GRAY);
-    if(stage == IPTriStages::GRAY) return gray;
+    if(stage == IPTriStages::GRAY) {
+        gray.copyTo(frame);
+    }
 
     vector<Point2i> corners;
     CVWrap::harris(gray, corners);
@@ -43,7 +45,7 @@ Mat IPTriangleDetect::loop(Mat &frame) {
         stringstream ss;
         ss << "corners: " << corners.size();
         cv::putText(frame, ss.str(), Point2i(10, 22), FONT_HERSHEY_COMPLEX_SMALL, 0.8, Scalar(0, 0, 255), 1, LineTypes::LINE_AA);
-        return frame;
+        return;
     }
 
     vector<Point2i> fcorners;
@@ -59,15 +61,19 @@ Mat IPTriangleDetect::loop(Mat &frame) {
             ss2 << "[" << p.x << ", " << p.y << "]";
             cv::putText(frame, ss2.str(), Point2i(10, 22 * i++), FONT_HERSHEY_COMPLEX_SMALL, 0.5, Scalar(0, 0, 255), 1, LineTypes::LINE_AA);
         }
-        return frame;
+        return;
     }
 
     CVWrap::adaptiveThreshold(gray);
     bitwise_not(gray, gray);
-    if(stage == IPTriStages::ADAPTIVE_THRESHOLD) return gray;
+    if(stage == IPTriStages::ADAPTIVE_THRESHOLD) {
+        gray.copyTo(frame);
+    }
 
     CVWrap::canny(gray);
-    if(stage == IPTriStages::CANNY) return gray;
+    if(stage == IPTriStages::CANNY) {
+        gray.copyTo(frame);
+    }
 
     vector<Line4i> lines;
     CVWrap::houghLines(gray, lines);
@@ -76,7 +82,7 @@ Mat IPTriangleDetect::loop(Mat &frame) {
         stringstream ss;
         ss << "lines: " << lines.size();
         cv::putText(frame, ss.str(), Point2i(10, 22), FONT_HERSHEY_COMPLEX_SMALL, 0.8, Scalar(0, 0, 255), 1, LineTypes::LINE_AA);
-        return frame;
+        return;
     }
 
     vector<Line4i> flines;
@@ -90,7 +96,7 @@ Mat IPTriangleDetect::loop(Mat &frame) {
         for(auto &l : flines) {
             cv::putText(frame, l.toString().c_str(), Point2i(10, 22 * i++), FONT_HERSHEY_COMPLEX_SMALL, 0.5, Scalar(0, 0, 255), 1, LineTypes::LINE_AA);
         }
-        return frame;
+        return;
     }
 
     vector<Line4i> borders;
@@ -104,7 +110,7 @@ Mat IPTriangleDetect::loop(Mat &frame) {
         for(auto &l : borders) {
             cv::putText(frame, l.toString().c_str(), Point2i(10, 22 * i++), FONT_HERSHEY_COMPLEX_SMALL, 0.5, Scalar(0, 0, 255), 1, LineTypes::LINE_AA);
         }
-        return frame;
+        return;
     }
 
     vector<Line4i> fborders;
@@ -118,17 +124,17 @@ Mat IPTriangleDetect::loop(Mat &frame) {
         for(auto &l : fborders) {
             cv::putText(frame, l.toString().c_str(), Point2i(10, 22 * i++), FONT_HERSHEY_COMPLEX_SMALL, 0.5, Scalar(0, 0, 255), 1, LineTypes::LINE_AA);
         }
-        return frame;
+        return;
     }
 
     vector<Triangle12i> triangles;
     findTriangles(fborders, triangles);
     if(stage == IPTriStages::FIND_TRIANGLES) {
-        DrawUtils::showTriangles(gray, triangles);
-        return gray;
+        cvtColor(gray, frame, COLOR_GRAY2BGR);
+        DrawUtils::showTriangles(frame, triangles);
+        return;
     }
     DrawUtils::showTriangles(frame, triangles);
-    return frame;
 }
 
 namespace iptd1 {
@@ -164,7 +170,7 @@ namespace iptd1 {
     }
 }
 
-void IPTriangleDetect::findBorders(const vector<Point2i> &corners, const vector<Line4i> &lines, vector<Line4i> &borders) {
+void IPTDHough::findBorders(const vector<Point2i> &corners, const vector<Line4i> &lines, vector<Line4i> &borders) {
     double cosrho = cos(CV_PI / 180 * 1); // отклонение 1 градус
 
     int corners_amount = (int) corners.size();
@@ -182,7 +188,7 @@ void IPTriangleDetect::findBorders(const vector<Point2i> &corners, const vector<
     }
 }
 
-void IPTriangleDetect::findTriangles(const vector<Line4i> &borders, vector<Triangle12i> &triangles) {
+void IPTDHough::findTriangles(const vector<Line4i> &borders, vector<Triangle12i> &triangles) {
     int borders_amount = (int) borders.size();
     // Детектирование треугольников
     for (int i = 0; i < borders_amount; i++) {

@@ -88,22 +88,22 @@ void PropertiesClient::connect() {
     registerOutPacketHandler(onOutPacketSendStatic, this);
 
     try {
-        while(alive) {
+        while(app.isAlive()) {
             try {
                 ConnectionGuard guard(this, addr); //life cycle safe
-                while (alive && isConnected()) {
+                while (app.isAlive() && isConnected()) {
                     processPacket();
                 }
                 //guard destructor close connection
             } catch(IOException e) {
                 e.printError();
             }
-            if(!alive) break;
-            cond.wait(2);
+            if(!app.isAlive()) break;
+            app.wait(2);
         }
     } catch (RuntimeException e) {
         e.printError();
-        alive = false;
+        app.close();
     }
     cout << "Exit PropertiesClient thread gracefully" << endl;
 }
@@ -114,6 +114,7 @@ bool contains(vector<T> list, T x) {
         if (*it == x) return true;
     return false;
 }
+
 
 void PropertiesClient::onOutPacketSend(OutPacket *p) {
     if(DEBUG && !contains(IGNORE_PACKET, p->getType())) {

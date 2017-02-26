@@ -5,7 +5,7 @@
  * Created on 13 октября 2016 г., 8:42
  */
 
-#include <AppState.hpp>
+#include <App.hpp>
 #include <opencv2/opencv.hpp>
 #include <csignal>
 #include <utils/Profiler.hpp>
@@ -29,20 +29,14 @@
 using namespace std;
 using namespace cv;
 
-void signalHandler(int signum) {
-    alive = false;
-    cond.notifyAll();
-    cout << "Terminated with signal " << signum << " " << strsignal(signum) << endl;
-}
-
 const String keys = ""
         "{help h usage ? |               | print this message                                                                }"
-        "{res resolution | 640x480       | capture resolution                                                                }"
+        "{res resolution |               | capture resolution (Example: 640x480)                                             }"
         "{fps            | -1.0          | fixed fps for video capture                                                       }"
         "{i image        |               | Replace video stream with image                                                   }"
         "{c camera       |-1             | Set index of web camera inside OpenCV VideoCapture class. Must be > 0.            }"
         "{x xml          |               | Path to xml of the object detect classifier                                       }"
-        "{flip           |false          | Flip image                                                                      }"
+        "{flip           |false          | Flip image                                                                        }"
         //View settings
         "{l local        |false          | Create simple local gui                                                           }"
         "{r remote       |localhost:2016 | Video stream to remote server                                                     }"
@@ -51,6 +45,7 @@ const String keys = ""
         "{d debug        |-1             | Edison connection debug. Sends '1' symbol to Edison every N seconds. Must be > 0. }"
 ;
 int main(int argc, const char* const argv[]) {
+    app.init();
     CommandLineParser parser(argc, argv, keys);
     parser.about("OpenCVClient");
 
@@ -87,9 +82,10 @@ int main(int argc, const char* const argv[]) {
 
     if(edisonDebug >= 0) {
         IntelEdison e;
-        while(alive) {
+        int i = 0;
+        while(app.isAlive()) {
             e.transmit();
-            cout << "1" << endl;
+            cout << i << endl;
             usleep((__useconds_t) edisonDebug * 1000 * 1000);
         }
         return 0;
@@ -136,10 +132,6 @@ int main(int argc, const char* const argv[]) {
         StreamClient scli;
         scli.bind();
 
-        //setup signal inHandler for caught interrupts
-        signal(SIGINT, signalHandler);
-        signal(SIGTERM, signalHandler);
-
         if(local) {
             // TODO: build properties in local window
 //                createTrackbar( "Sigma", "Laplacian", &sigma, 15, 0 );
@@ -147,7 +139,7 @@ int main(int argc, const char* const argv[]) {
         }
         Profiler prof(profiler);
         Mat frame;
-        while (alive) {
+        while (app.isAlive()) {
             prof.start();
 
             frameSrc->capture(frame);
@@ -174,9 +166,6 @@ int main(int argc, const char* const argv[]) {
 
             prof.end();
         }
-        alive = false;
-        signal(SIGINT, SIG_DFL);
-        signal(SIGTERM, SIG_DFL);
     } catch(cv::Exception e) {
 //        throw e;
         cerr << "err: " << e.err << endl;
@@ -184,6 +173,7 @@ int main(int argc, const char* const argv[]) {
         cerr << "func: " << e.func << endl;
         cerr << "msg: " << e.msg << endl;
     }
+    app.close();
     cout << "Exit main thread gracefully" << endl;
     return 0;
 }

@@ -7,13 +7,18 @@
 #include <utils/CvUtils.hpp>
 #include <opencv/OpenCVWrap.hpp>
 #include <utils/DrawUtils.hpp>
+#include <triangle_detect/platov_aleksey/PATriangleDetect.hpp>
+#include <triangle_detect/ilin_pavel/IPTDHough.hpp>
+#include <triangle_detect/ilin_pavel/IPTDContours.hpp>
+#include <triangle_detect/ilin_pavel/IPTDManual.hpp>
 
 #define MethodsMacro(m) \
     m(RAW, "Без оработки") \
     m(MANUAL_TEST, "Тест") \
-    m(PA_TRIANGLES, "Платов Алексей. Поиск треугольников.") \
-    m(IP_TRIANGLES, "Ильин Павел. Поиск треугольников.") \
-    m(IP_TRIANGLES2, "Ильин Павел. Поиск треугольников 2.") \
+    m(PATD, "Платов Алексей. Поиск треугольников.") \
+    m(IPTD_HOUGH, "Ильин Павел. Преобразование Хафа") \
+    m(IPTD_CONTOURS, "Ильин Павел. Контуры") \
+    m(IPTD_MANUAL, "Ильин Павел. Вручную") \
     m(LINES, "поиск линий") \
     m(CONTOURS, "контуры") \
     m(BLUR_TEST, "Тест блюра") \
@@ -23,13 +28,15 @@
     m(ADAPTIVE_THRESHOLD_TEST, "Тест адаптивного порогового преобразования")
 ENUM_STRING(MethodsMacro, Methods)
 
-void Loop::handle(cv::Mat &frame) {
-    switch(props.getSelect("method", &Methods::all, Methods::IP_TRIANGLES2)) {
-        case Methods::RAW: break;
-        case Methods::MANUAL_TEST: { //тест адаптивного порогового преобразования на блюре
-            if(frame.type() == CV_16SC3) {
+static PATriangleDetect patd;
+static IPTDHough iptdHough;
+static IPTDContours iptdContours;
+static IPTDManual iptdManual;
 
-            }
+void Loop::handle(cv::Mat &frame) {
+    switch(props.getSelect("::method", &Methods::all, Methods::HARRIS_TEST)) {
+        case Methods::RAW: break;
+        case Methods::MANUAL_TEST: {
             cvtColor(frame, gray, COLOR_BGR2GRAY);
             CVWrap::gaussianBlur(gray);
             CVWrap::adaptiveThreshold(gray);
@@ -38,55 +45,30 @@ void Loop::handle(cv::Mat &frame) {
             vector<Line4i> lines;
             CVWrap::houghLines(gray, lines);
             DrawUtils::showLines(gray, lines);
-            frame = gray;
+            cvtColor(gray, frame, COLOR_GRAY2BGR);
             break;
         }
-        case Methods::PA_TRIANGLES:
-            frame = pa_triangle.loop(frame);
+        case Methods::PATD:
+            frame = patd.loop(frame);
             break;
-        case Methods::IP_TRIANGLES:
-            ip_triangle.loop(frame);
+        case Methods::IPTD_HOUGH:
+            iptdHough.loop(frame);
             break;
-        case Methods::IP_TRIANGLES2: {
-            vector<Triangle12i> triangles;
-            ip_triangle2.find(frame, triangles);
-            Triangle12i *big = nullptr;
-            int bigArea = 0;
-            for(auto &t : triangles) {
-                int curArea = t.getAABB().area();
-                if(big == nullptr || curArea > bigArea) {
-                    bigArea = curArea;
-                    big = &t;
-                }
-            }
-            if(big == nullptr) break;
-            if(last.isEmpty()) {
-                color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-                last = *big;
-                edison.transmit();
-                break;
-            }
-
-            const Point2i &p1 = big->getCenter();
-            const Point2i &p2 = last.getCenter();
-            Point2i v = p1 - p2;
-            double distance = sqrt(v.x*v.x + v.y*v.y);
-            if(distance > 100) {
-                color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-                edison.transmit();
-            }else{
-                cv::line(frame, p1, p2, color, 2, LineTypes::LINE_AA);
-            }
-            DrawUtils::showTriangle(frame, *big, color);
-            last = *big;
+        case Methods::IPTD_CONTOURS: {
+            iptdContours.loop(frame);
             break;
         }
-        case Methods::LINES:{
+        case Methods::IPTD_MANUAL: {
+            iptdManual.loop(frame);
+            break;
+        }
+        case Methods::LINES: {
             cvtColor(frame, gray, COLOR_BGR2GRAY);
             CVWrap::gaussianBlur(gray, 7, 1.5);
             CVWrap::canny(gray);
             vector<Line4i> lines;
             CVWrap::houghLines(gray, lines);
+            cvtColor(gray, frame, COLOR_GRAY2BGR);
             DrawUtils::showLines(frame, lines);
             break;
         }

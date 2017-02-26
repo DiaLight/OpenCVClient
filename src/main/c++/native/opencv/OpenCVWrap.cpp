@@ -29,7 +29,8 @@ map<int, string> HarrisBorderTypesMap = {
         {BorderTypes::BORDER_ISOLATED, "Isolated"}
 };
 
-void ::CVWrap::harris(Mat &mat, vector<Point2i> &points, int max, int def_blockSize, int def_ksize, double def_k,
+void ::CVWrap::harris(Mat &mat, vector<Point2i> &points,
+                      int max, int def_blockSize, int def_ksize, double def_k,
                       BorderTypes def_borderType, int def_threshold) {
     int blockSize = props.getInt("Harris.blockSize", def_blockSize);
     int ksize = props.getInt("Harris.ksize", def_ksize);
@@ -43,13 +44,13 @@ void ::CVWrap::harris(Mat &mat, vector<Point2i> &points, int max, int def_blockS
     cv::cornerHarris(mat, dst, blockSize, ksize, k, borderType);
 
     /// Normalizing
-    normalize(dst, dst, 0, 255, NORM_MINMAX, CV_32FC1, Mat());
+    normalize(dst, dst, 0, 255, NORM_MINMAX, CV_32FC1);
     Mat dst_norm_scaled;
     convertScaleAbs(dst, dst_norm_scaled);
 
     /// Drawing a circle around corners
-    for(int j = 0; j < dst.rows ; j++) {
-        for(int i = 0; i < dst.cols; i++) {
+    for(int i = 0; i < dst.cols; i++) {
+        for(int j = 0; j < dst.rows ; j++) {
             if((int) dst.at<float>(j,i) > threshold) {
                 if(points.size() >= max) return;
                 points.push_back(Point2i(i, j));
@@ -70,7 +71,7 @@ void ::CVWrap::adaptiveThreshold(Mat &mat) {
 vector<Vec4i> tmp;
 void ::CVWrap::houghLines(Mat &gray, vector<Line4i> &lines) {
 //        double hough_rho = 1;
-    double rho = props.getDouble("HoughLinesP.rho", 10);
+    double rho = props.getDouble("HoughLinesP.rho", 3);
 //        double hough_theta = CV_PI / 180;
     double theta = props.getDouble("HoughLinesP.theta", CV_PI / 180);
 //        int hough_treshold = 15;//70; // 15
@@ -102,5 +103,11 @@ void ::CVWrap::approxPolyDP(vector<vector<Point>> const &in, vector<vector<Point
         cv::approxPolyDP(contour, approx, arcLength(contour, true)*epsilon, true);
         out.push_back(approx);
     }
+}
+
+void ::CVWrap::otsu(Mat &gray) {
+    double thresh = props.getDouble("otsu.thresh", 0);
+    double maxval = props.getDouble("otsu.maxval", 255);
+    ::threshold(gray, gray, thresh, maxval, CV_THRESH_OTSU);
 }
 

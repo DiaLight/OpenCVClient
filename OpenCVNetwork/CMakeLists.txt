@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
-project (OpenCVNetwork)
+project(OpenCVNetwork)
 
-MESSAGE( STATUS "OpenCVNetwork PROJECT_NAME: " ${PROJECT_NAME} )
+message(STATUS "OpenCVNetwork PROJECT_NAME: " ${PROJECT_NAME})
 set(PROJECT_HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/main/c++/headers)
 set(PROJECT_NATIVE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/main/c++/native)
 file(GLOB_RECURSE PROJECT_HEADERS_FILES ${PROJECT_HEADERS_DIR}/*.hpp)

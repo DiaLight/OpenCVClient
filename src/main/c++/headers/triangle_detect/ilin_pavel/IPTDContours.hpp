@@ -6,14 +6,20 @@
 #define OPENCVCLIENT_IPTRIANGLEDETECT2_HPP
 
 #include <opencv/Types.hpp>
+#include <IntelEdison.hpp>
 
-class IPTriangleDetect2 {
+class IPTDContours {
 
     Mat gray;
+    Triangle12i last;
+    RNG rng;
+    Scalar color;
+    IntelEdison edison;
 public:
 
     void find(Mat &mat, vector<Triangle12i> &triangles);
 
+    void loop(Mat &mat);
 };
 
 
