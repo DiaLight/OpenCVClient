@@ -11,6 +11,7 @@
 #include <triangle_detect/ilin_pavel/IPTDHough.hpp>
 #include <triangle_detect/ilin_pavel/IPTDContours.hpp>
 #include <triangle_detect/ilin_pavel/IPTDManual.hpp>
+#include <tld/TLDWrap.hpp>
 
 #define MethodsMacro(m) \
     m(RAW, "Без оработки") \
@@ -25,7 +26,8 @@
     m(KENNY_TEST, "Тест метода Кенни") \
     m(HARRIS_TEST, "Тест метода Харриса") \
     m(THRESHOLD_TEST, "Тест порогового преобразования") \
-    m(ADAPTIVE_THRESHOLD_TEST, "Тест адаптивного порогового преобразования")
+    m(ADAPTIVE_THRESHOLD_TEST, "Тест адаптивного порогового преобразования") \
+    m(TLD, "Tracking learning detection")
 ENUM_STRING(MethodsMacro, Methods)
 
 static PATriangleDetect patd;
@@ -33,8 +35,16 @@ static IPTDHough iptdHough;
 static IPTDContours iptdContours;
 static IPTDManual iptdManual;
 
+Loop::Loop(SimpleConfig *cfg) : cfg(cfg), tldWrap(cfg->tldPath) {
+
+}
+
+void Loop::init(cv::Mat &frame) {
+    tldWrap.init(frame);
+}
+
 void Loop::handle(cv::Mat &frame) {
-    switch(props.getSelect("::method", &Methods::all, Methods::HARRIS_TEST)) {
+    switch(props.getSelect("::method", &Methods::all, Methods::TLD)) {
         case Methods::RAW: break;
         case Methods::MANUAL_TEST: {
             cvtColor(frame, gray, COLOR_BGR2GRAY);
@@ -44,8 +54,8 @@ void Loop::handle(cv::Mat &frame) {
             CVWrap::canny(gray); //обводит резкие линии(детектор границ Кенни)
             vector<Line4i> lines;
             CVWrap::houghLines(gray, lines);
-            DrawUtils::showLines(gray, lines);
             cvtColor(gray, frame, COLOR_GRAY2BGR);
+            DrawUtils::showLines(frame, lines);
             break;
         }
         case Methods::PATD:
@@ -129,7 +139,11 @@ void Loop::handle(cv::Mat &frame) {
             bitwise_not(gray, gray);
             frame = gray;
             break;
+        case Methods::TLD:
+            tldWrap.handle(frame);
+            break;
         default:break;
     }
 }
+
 

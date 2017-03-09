@@ -25,7 +25,7 @@ ENUM_STRING(IPTri2Macro, IPTri2Stages)
 
 void IPTDContours::find(Mat &frame, vector<Triangle12i> &result) {
 
-    int stage = props.getSelect("IPTriangle2.stage", &IPTri2Stages::all, IPTri2Stages::FINAL);
+    int stage = props.getSelect("::IPTD.Contours.stage", &IPTri2Stages::all, IPTri2Stages::FINAL);
 
     CVWrap::gaussianBlur(frame, 7, 1.5);
     if(stage == IPTri2Stages::SMOOTH) return;

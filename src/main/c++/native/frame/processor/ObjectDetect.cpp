@@ -22,6 +22,10 @@ ObjectDetect::~ObjectDetect() {
 
 }
 
+void ObjectDetect::init(cv::Mat &frame) {
+
+}
+
 void ObjectDetect::handle(Mat &frame) {
     cvtColor(frame, gray, COLOR_BGR2GRAY);
     CVWrap::gaussianBlur(gray, 7, 1.5);

@@ -24,9 +24,28 @@ set(PROJECT_NATIVE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/main/c++/native)
 file(GLOB_RECURSE PROJECT_HEADERS_FILES ${PROJECT_HEADERS_DIR}/*.hpp)
 file(GLOB_RECURSE PROJECT_NATIVE_FILES ${PROJECT_NATIVE_DIR}/*.cpp)
 
+set(TLD_HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/TLD/GeorgNebehay)
+set(TLD_NATIVE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/TLD/GeorgNebehay)
+file(GLOB_RECURSE TLD_HEADERS_FILES ${TLD_HEADERS_DIR}/*.h)
+file(GLOB_RECURSE TLD_NATIVE_FILES ${TLD_NATIVE_DIR}/*.cpp)
+
+set(CVBLOBS_HEADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/cvblobs)
+set(CVBLOBS_NATIVE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/cvblobs)
+file(GLOB_RECURSE CVBLOBS_HEADERS_FILES ${CVBLOBS_HEADERS_DIR}/*.h)
+file(GLOB_RECURSE CVBLOBS_NATIVE_FILES ${CVBLOBS_NATIVE_DIR}/*.cpp)
+
 # build executable
-include_directories(${PROJECT_HEADERS_DIR})
-add_executable(${PROJECT_NAME} ${PROJECT_HEADERS_FILES} ${PROJECT_NATIVE_FILES})
+include_directories(
+        ${PROJECT_HEADERS_DIR}
+        ${TLD_HEADERS_DIR}
+        ${CVBLOBS_HEADERS_DIR}
+)
+add_executable(
+        ${PROJECT_NAME}
+        ${PROJECT_HEADERS_FILES} ${PROJECT_NATIVE_FILES}
+        ${TLD_HEADERS_FILES} ${TLD_NATIVE_FILES}
+        ${CVBLOBS_HEADERS_FILES} ${CVBLOBS_NATIVE_FILES}
+)
 
 # build and link subprojects
 add_subdirectory(Properties)
@@ -46,7 +65,6 @@ target_link_libraries(${PROJECT_NAME} pthread)
 set(raspicam_DIR "/usr/local/lib/cmake")
 find_package(raspicam)
 IF(raspicam_CV_FOUND)
-    MESSAGE( STATUS "OpenCVNetwork_SOURCE_DIR: " ${OpenCVNetwork_SOURCE_DIR} )
     target_link_libraries (${PROJECT_NAME} ${raspicam_CV_LIBS})
     add_definitions(-DUSE_RASPICAM=)
 elseif(FORCE_RASPICAM)
@@ -62,3 +80,6 @@ else()
 endif()
 
 #message( STATUS "** OpenCVNetwork_SOURCE_DIR: " ${OpenCVNetwork_SOURCE_DIR} )
+
+#set optimization level
+set(CMAKE_BUILD_TYPE Release)

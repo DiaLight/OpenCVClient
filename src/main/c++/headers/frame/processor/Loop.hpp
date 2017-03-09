@@ -7,11 +7,18 @@
 
 
 #include <IntelEdison.hpp>
+#include <SimpleConfig.hpp>
+#include <tld/TLDWrap.hpp>
 #include "FrameProcessor.hpp"
 
 class Loop : public FrameProcessor {
+    SimpleConfig *cfg;
     cv::Mat gray;
+    TLDWrap tldWrap;
 public:
+    Loop(SimpleConfig *cfg);
+
+    void init(cv::Mat &frame) override;
 
     void handle(cv::Mat &frame) override;
 

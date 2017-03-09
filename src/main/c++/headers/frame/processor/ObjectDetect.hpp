@@ -20,6 +20,8 @@ public:
     ObjectDetect& operator=(const ObjectDetect &) = delete; //deleted copy assignment operator
     virtual ~ObjectDetect();
 
+    void init(cv::Mat &frame) override;
+
     void handle(cv::Mat &frame) override;
 
 };
